@@ -1,0 +1,398 @@
+{% extends "back/base.html" %}
+{% load static %}
+
+{% block custom_css %}
+<style>
+    .overview-card,
+    .table-card,
+    .list-card {
+        border: 0;
+        box-shadow: 0 10px 30px rgba(31, 45, 61, 0.06);
+    }
+    .overview-card .icon-wrap {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        color: #fff;
+    }
+    .icon-primary { background: linear-gradient(135deg, #3f51b5, #5c6bc0); }
+    .icon-success { background: linear-gradient(135deg, #16a34a, #22c55e); }
+    .icon-warning { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
+    .icon-danger { background: linear-gradient(135deg, #dc2626, #ef4444); }
+    .icon-info { background: linear-gradient(135deg, #0284c7, #38bdf8); }
+    .icon-dark { background: linear-gradient(135deg, #334155, #475569); }
+    .metric-label {
+        color: #6c757d;
+        font-size: 0.85rem;
+        margin-bottom: 6px;
+    }
+    .metric-value {
+        font-size: 1.75rem;
+        font-weight: 700;
+        line-height: 1;
+        margin-bottom: 8px;
+    }
+    .metric-meta {
+        color: #6c757d;
+        font-size: 0.82rem;
+        margin-bottom: 0;
+    }
+    .status-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        border-radius: 999px;
+        padding: 5px 10px;
+    }
+    .status-pending { background: #f3f4f6; color: #4b5563; }
+    .status-processing { background: #fff7ed; color: #c2410c; }
+    .status-shipped { background: #eff6ff; color: #1d4ed8; }
+    .status-delivered { background: #ecfdf5; color: #047857; }
+    .status-cancelled { background: #fef2f2; color: #b91c1c; }
+    .mini-list .list-group-item {
+        border-left: 0;
+        border-right: 0;
+        padding: 14px 0;
+    }
+    .mini-list .list-group-item:first-child {
+        padding-top: 0;
+    }
+    .mini-list .list-group-item:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+    }
+    .empty-state {
+        color: #6c757d;
+        padding: 24px 0;
+        text-align: center;
+    }
+</style>
+{% endblock custom_css %}
+
+{% block content %}
+<div class="ec-content-wrapper">
+    <div class="content">
+        <div class="breadcrumb-wrapper breadcrumb-wrapper-2">
+            <div>
+                <h1>Dashboard</h1>
+                <p class="breadcrumbs">
+                    <span><a href="{% url 'dashboard' %}">Home</a></span>
+                    <span><i class="mdi mdi-chevron-right"></i></span>Dashboard
+                </p>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-xxl-3 col-xl-4 col-md-6 mb-4">
+                <div class="card overview-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-start justify-content-between">
+                            <div>
+                                <p class="metric-label">Users</p>
+                                <div class="metric-value">{{ total_users }}</div>
+                                <p class="metric-meta">{{ active_users }} active accounts</p>
+                            </div>
+                            <span class="icon-wrap icon-primary"><i class="mdi mdi-account-group"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xxl-3 col-xl-4 col-md-6 mb-4">
+                <div class="card overview-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-start justify-content-between">
+                            <div>
+                                <p class="metric-label">Products</p>
+                                <div class="metric-value">{{ total_products }}</div>
+                                <p class="metric-meta">{{ published_products }} published, {{ low_stock_products }} low stock</p>
+                            </div>
+                            <span class="icon-wrap icon-success"><i class="mdi mdi-cube-outline"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xxl-3 col-xl-4 col-md-6 mb-4">
+                <div class="card overview-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-start justify-content-between">
+                            <div>
+                                <p class="metric-label">Orders</p>
+                                <div class="metric-value">{{ total_orders }}</div>
+                                <p class="metric-meta">{{ pending_orders }} pending, {{ delivered_orders }} delivered</p>
+                            </div>
+                            <span class="icon-wrap icon-info"><i class="mdi mdi-cart-outline"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xxl-3 col-xl-4 col-md-6 mb-4">
+                <div class="card overview-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-start justify-content-between">
+                            <div>
+                                <p class="metric-label">Revenue</p>
+                                <div class="metric-value">Tk {{ total_revenue }}</div>
+                                <p class="metric-meta">Today: Tk {{ today_revenue }}</p>
+                            </div>
+                            <span class="icon-wrap icon-warning"><i class="mdi mdi-cash-multiple"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card overview-card h-100">
+                    <div class="card-body">
+                        <p class="metric-label">Categories</p>
+                        <div class="metric-value">{{ total_categories }}</div>
+                        <p class="metric-meta">{{ active_sliders }} active banners</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card overview-card h-100">
+                    <div class="card-body">
+                        <p class="metric-label">Reviews</p>
+                        <div class="metric-value">{{ total_reviews }}</div>
+                        <p class="metric-meta">{{ pending_reviews }} pending moderation</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card overview-card h-100">
+                    <div class="card-body">
+                        <p class="metric-label">Delivery Charges</p>
+                        <div class="metric-value">{{ delivery_charge_count }}</div>
+                        <p class="metric-meta">{{ out_of_stock_products }} products out of stock</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card overview-card h-100">
+                    <div class="card-body">
+                        <p class="metric-label">Today's Orders</p>
+                        <div class="metric-value">{{ today_orders }}</div>
+                        <p class="metric-meta">{{ processing_orders }} processing, {{ shipped_orders }} shipped</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-xl-8 mb-4">
+                <div class="card table-card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Recent Orders</h5>
+                        <a href="{% url 'order_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                    </div>
+                    <div class="card-body">
+                        {% if recent_orders %}
+                        <div class="table-responsive">
+                            <table class="table align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Customer</th>
+                                        <th>Items</th>
+                                        <th>Total</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for order in recent_orders %}
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'order_details' order.order_id %}"><strong>{{ order.order_id }}</strong></a>
+                                        </td>
+                                        <td>{{ order.first_name }} {{ order.last_name }}</td>
+                                        <td>{{ order.items.count }}</td>
+                                        <td>Tk {{ order.total_amount }}</td>
+                                        <td>
+                                            <span class="status-chip status-{{ order.status }}">{{ order.get_status_display }}</span>
+                                        </td>
+                                        <td>{{ order.created_at|date:"M d, Y" }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="empty-state">No orders available yet.</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-4 mb-4">
+                <div class="card list-card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Order Status</h5>
+                        <a href="{% url 'order_list' %}" class="btn btn-sm btn-outline-primary">Manage</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group list-group-flush mini-list">
+                            <div class="list-group-item d-flex justify-content-between">
+                                <span>Pending</span>
+                                <strong>{{ pending_orders }}</strong>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between">
+                                <span>Processing</span>
+                                <strong>{{ processing_orders }}</strong>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between">
+                                <span>Shipped</span>
+                                <strong>{{ shipped_orders }}</strong>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between">
+                                <span>Delivered</span>
+                                <strong>{{ delivered_orders }}</strong>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between">
+                                <span>Cancelled</span>
+                                <strong>{{ cancelled_orders }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-xl-4 mb-4">
+                <div class="card list-card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Recent Customers</h5>
+                        <a href="{% url 'user_list' %}" class="btn btn-sm btn-outline-primary">Users</a>
+                    </div>
+                    <div class="card-body">
+                        {% if recent_users %}
+                        <div class="list-group list-group-flush mini-list">
+                            {% for user in recent_users %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <strong>{{ user.first_name|default:user.email }}</strong>
+                                        <div class="text-muted small">{{ user.email }}</div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="small text-muted">{{ user.order_count }} orders</div>
+                                        <strong>Tk {{ user.total_spent }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="empty-state">No customers found.</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-4 mb-4">
+                <div class="card list-card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Recent Reviews</h5>
+                        <a href="{% url 'review' %}" class="btn btn-sm btn-outline-primary">Reviews</a>
+                    </div>
+                    <div class="card-body">
+                        {% if recent_reviews_list %}
+                        <div class="list-group list-group-flush mini-list">
+                            {% for review in recent_reviews_list %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                    <strong>{{ review.name }}</strong>
+                                    <span class="small text-muted">{{ review.created_at|date:"M d" }}</span>
+                                </div>
+                                <div class="small text-muted mb-1">{{ review.product.title }}</div>
+                                <div class="small">{{ review.review|truncatechars:80 }}</div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="empty-state">No reviews submitted yet.</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-4 mb-4">
+                <div class="card list-card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Low Stock Alerts</h5>
+                        <a href="{% url 'product_list' %}" class="btn btn-sm btn-outline-primary">Products</a>
+                    </div>
+                    <div class="card-body">
+                        {% if low_stock_items %}
+                        <div class="list-group list-group-flush mini-list">
+                            {% for product in low_stock_items %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{{ product.title }}</strong>
+                                        <div class="small text-muted">{{ product.sku }}</div>
+                                    </div>
+                                    <span class="badge badge-danger">Stock {{ product.stock_quantity }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="empty-state">No low-stock products right now.</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card table-card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Top Selling Products</h5>
+                        <a href="{% url 'product_list' %}" class="btn btn-sm btn-outline-primary">Inventory</a>
+                    </div>
+                    <div class="card-body">
+                        {% if top_products %}
+                        <div class="table-responsive">
+                            <table class="table align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>SKU</th>
+                                        <th>Units Sold</th>
+                                        <th>Sales</th>
+                                        <th>Approved Reviews</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for product in top_products %}
+                                    <tr>
+                                        <td>{{ product.title }}</td>
+                                        <td>{{ product.sku }}</td>
+                                        <td>{{ product.total_units_sold }}</td>
+                                        <td>Tk {{ product.total_sales }}</td>
+                                        <td>{{ product.approved_review_count }}</td>
+                                        <td>{{ product.get_status_display }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="empty-state">No product sales data available yet.</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

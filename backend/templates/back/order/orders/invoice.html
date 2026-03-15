@@ -1,0 +1,201 @@
+{% extends "back/base.html" %}
+{% load static %}
+
+{% block custom_css %}
+
+{% endblock custom_css %}
+
+{% block content %}
+<!-- CONTENT WRAPPER -->
+<div class="ec-content-wrapper">
+	<div class="content">
+		<div class="breadcrumb-wrapper breadcrumb-wrapper-2">
+			<h1>Invoice</h1>
+			<p class="breadcrumbs">
+				<span><a href="{% url 'dashboard' %}">Home</a></span>
+				<span><i class="mdi mdi-chevron-right"></i></span>
+				<span><a href="{% url 'order_list' %}">Orders</a></span>
+				<span><i class="mdi mdi-chevron-right"></i></span>
+				<span><a href="{% url 'order_details' order.order_id %}">{{ order.order_id }}</a></span>
+				<span><i class="mdi mdi-chevron-right"></i></span>Invoice
+			</p>
+		</div>
+		<div class="card invoice-wrapper border-radius border bg-white p-4">
+			<div class="d-flex justify-content-between">
+				<h3 class="text-dark font-weight-medium">Invoice #{{ order.order_id }}</h3>
+
+				<div class="btn-group">
+					<button class="btn btn-sm btn-primary" onclick="window.print()">
+						<i class="mdi mdi-printer"></i> Print
+					</button>
+				</div>
+			</div>
+
+			<div class="row pt-5">
+				<div class="col-xl-3 col-lg-4 col-sm-6">
+					<p class="text-dark mb-2">From</p>
+
+					<address>
+						<span>Your Store Name</span>
+						<br> Your Store Address
+						<br> <span>Email:</span> store@example.com
+						<br> <span>Phone:</span> +880 1234 567890
+					</address>
+				</div>
+				<div class="col-xl-3 col-lg-4 col-sm-6">
+					<p class="text-dark mb-2">To</p>
+
+					<address>
+						<span>{{ order.first_name }} {{ order.last_name }}</span>
+						<br> {{ order.address }}
+						<br> {{ order.thana }}, {{ order.district }}
+						<br> <span>Email:</span> {{ order.email }}
+						<br> <span>Phone:</span> {{ order.phone }}
+					</address>
+				</div>
+				<div class="col-xl-4 disp-none"></div>
+				<div class="col-xl-2 col-lg-4 col-sm-6">
+					<p class="text-dark mb-2">Details</p>
+
+					<address>
+						<span>Invoice ID:</span>
+						<span class="text-dark">INV-{{ order.order_id }}</span>
+						<br><span>Date :</span> {{ order.created_at|date:"F d, Y" }}
+						<br> <span>Order ID:</span> {{ order.order_id }}
+						<br> <span>Payment:</span> {{ order.payment_method }}
+					</address>
+				</div>
+			</div>
+
+			<div class="table-responsive">
+				<table class="table mt-3 table-striped table-responsive table-responsive-large inv-tbl"
+					style="width:100%">
+					<thead>
+						<tr>
+							<th>#</th>
+							<th>Image</th>
+							<th>Item</th>
+							<th>Description</th>
+							<th>Quantity</th>
+							<th>Unit Price</th>
+							<th>Total</th>
+						</tr>
+					</thead>
+
+					<tbody>
+						{% for item in order_items %}
+						<tr>
+							<td>{{ forloop.counter }}</td>
+							<td>
+								{% if item.product.thumbnail_image %}
+									<img class="invoice-item-img" src="{{ item.product.thumbnail_image.url }}" alt="{{ item.product.title }}" />
+								{% else %}
+									<img class="invoice-item-img" src="{% static 'assets/img/no-image.png' %}" alt="No Image" />
+								{% endif %}
+							</td>
+							<td>{{ item.product.title }}</td>
+							<td>{{ item.product.description|default:"No description available"|truncatewords:10 }}</td>
+							<td>{{ item.quantity }}</td>
+							<td>৳{{ item.price }}</td>
+							<td>৳{{ item.subtotal }}</td>
+						</tr>
+						{% empty %}
+						<tr>
+							<td colspan="7" class="text-center py-4">No items found in this order.</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+
+			<div class="row justify-content-end inc-total">
+				<div class="col-lg-3 col-xl-3 col-xl-3 ml-sm-auto">
+					<ul class="list-unstyled mt-3">
+						<li class="mid pb-3 text-dark"> Products Subtotal
+							<span class="d-inline-block float-right text-default">৳{{ product_subtotal }}</span>
+						</li>
+
+						<li class="mid pb-3 text-dark">Delivery Charge
+							<span class="d-inline-block float-right text-default">৳{{ order.delivery_charge }}</span>
+						</li>
+
+						<li class="pb-3 text-dark">Grand Total
+							<span class="d-inline-block float-right">৳{{ order.total_amount }}</span>
+						</li>
+					</ul>
+
+					<div class="text-center mt-4">
+						<small class="text-muted">Payment Method: {{ order.payment_method }}</small>
+						<br>
+						<small class="text-muted">Invoice Date: {{ order.created_at|date:"F d, Y" }}</small>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div> <!-- End Content -->
+</div> <!-- End Content Wrapper -->
+{% endblock content %}
+
+{% block custom_js %}
+<script>
+// Print functionality
+function printInvoice() {
+    window.print();
+}
+
+// Add print media CSS for better printing - FIXED VERSION
+window.onload = function() {
+    // Create link element for print CSS
+    var printCSS = document.createElement('link');
+    printCSS.rel = 'stylesheet';
+    printCSS.type = 'text/css';
+    printCSS.media = 'print';
+    printCSS.href = "{% static 'assets/css/print.css' %}";
+    document.head.appendChild(printCSS);
+    
+    // Also add inline print styles as backup
+    var style = document.createElement('style');
+    style.media = 'print';
+    style.innerHTML = `
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .card.invoice-wrapper, .card.invoice-wrapper * {
+                visibility: visible;
+            }
+            .card.invoice-wrapper {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+};
+
+// Optional: Add a better print button handler
+document.addEventListener('DOMContentLoaded', function() {
+    var printBtn = document.querySelector('button[onclick*="print"]');
+    if (printBtn) {
+        printBtn.onclick = function() {
+            // Before printing, hide everything except invoice
+            document.querySelectorAll('body > *:not(.ec-content-wrapper)').forEach(function(el) {
+                el.style.visibility = 'hidden';
+            });
+            
+            // Print
+            window.print();
+            
+            // Restore visibility after printing
+            setTimeout(function() {
+                document.querySelectorAll('body > *').forEach(function(el) {
+                    el.style.visibility = '';
+                });
+            }, 100);
+        };
+    }
+});
+</script>
+{% endblock custom_js %}

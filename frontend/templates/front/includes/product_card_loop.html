@@ -1,0 +1,80 @@
+{% load static %}
+<div class="{{ card_classes|default:'col-lg-5-items col-md-4 col-sm-6 col-xs-6 ec-product-content' }}">
+    <div class="ec-product-inner">
+        <div class="ec-pro-image-outer">
+            <div class="ec-pro-image">
+                <a href="{% url 'singleproduct' product.slug %}" class="image">
+                    
+                    {% with final_price=product.get_discounted_price %}
+                        
+                        <span class="flags">
+                            {% if product.new %}
+                                <span class="new">New</span>
+                            {% endif %}
+                            {% if final_price < product.selling_price %}
+                                <span class="sale">Sale</span>
+                            {% endif %}
+                        </span>
+
+                        {% if product.thumbnail_image %}
+                            <img class="main-image" src="{{ product.thumbnail_image.url }}" alt="{{ product.title }}" />
+                            <img class="hover-image" src="{{ product.thumbnail_image.url }}" alt="{{ product.title }}" />
+                        {% else %}
+                            <img class="main-image" src="{% static 'assets/images/product-image/1.jpg' %}" alt="Default" />
+                        {% endif %}
+
+                    {% endwith %}
+                </a>
+                
+                <div class="ec-pro-actions">
+                    <a href="#" class="ec-btn-group quickview" data-bs-toggle="modal" data-bs-target="#ec_quickview_modal_{{ product.id }}">
+                        <i class="fi-rr-eye"></i>
+                    </a>
+                    
+                    <a href="javascript:void(0)" 
+                       class="ec-btn-group add-to-cart ec-home-add-to-cart js-one-click-add" 
+                       data-url="{% url 'add_to_cart' product.id %}" 
+                       title="Add To Cart">
+                        <i class="fi-rr-shopping-basket"></i>
+                    </a>
+
+                    <form action="{% url 'buy_now' product.id %}" method="POST" class="ec-buy-now-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="qty" value="1">
+                        <button type="submit" class="ec-btn-group ec-buy-now-btn" title="Buy Now">
+                            <i class="fi-rr-bolt"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="ec-pro-content">
+            <h5 class="ec-pro-title"><a href="{% url 'singleproduct' product.slug %}">{{ product.title }}</a></h5>
+            <div class="ec-pro-list-desc">{{ product.short_description|default:'No description available.' }}</div>
+            
+            <div class="ec-pro-rat-price">
+                <span class="ec-pro-rating">
+                    {% for i in "12345"|make_list %}
+                        {% if product.avg_rating|default:5|add:0.5 >= forloop.counter %}
+                            <i class="ecicon eci-star fill"></i>
+                        {% else %}
+                            <i class="ecicon eci-star-o"></i>
+                        {% endif %}
+                    {% endfor %}
+                </span>
+                
+                <span class="ec-price">
+                    {% with final_price=product.get_discounted_price %}
+                        {% if final_price < product.selling_price %}
+                            <span class="new-price">৳{{ final_price }}</span>
+                            <span class="old-price">৳{{ product.selling_price }}</span>
+                        {% else %}
+                            <span class="new-price">৳{{ product.selling_price }}</span>
+                        {% endif %}
+                    {% endwith %}
+                </span>
+            </div>
+        </div>
+    </div>
+</div>

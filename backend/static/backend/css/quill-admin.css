@@ -1,0 +1,14 @@
+.quill-admin-wrapper {
+    min-width: 720px;
+    max-width: 100%;
+}
+
+.quill-admin-editor {
+    min-height: 220px;
+    background: #fff;
+}
+
+.quill-admin-wrapper .ql-toolbar.ql-snow,
+.quill-admin-wrapper .ql-container.ql-snow {
+    border-color: #d0d7de;
+}

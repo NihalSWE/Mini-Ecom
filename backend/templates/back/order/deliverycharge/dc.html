@@ -1,0 +1,492 @@
+{% extends "back/base.html" %}
+
+{% load static %}
+
+{% block custom_css %}
+<!-- DataTables CSS -->
+<link href="{% static 'assets/plugins/data-tables/datatables.bootstrap5.min.css' %}" rel="stylesheet"/>
+<link href="{% static 'assets/plugins/data-tables/responsive.datatables.min.css' %}" rel="stylesheet"/>
+
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-theme@0.1.0-beta.10/dist/select2-bootstrap.min.css" rel="stylesheet" />
+
+<style>
+    /* Ensure modals sit on top of everything */
+    .modal-backdrop { z-index: 1040 !important; }
+    .modal { z-index: 1050 !important; }
+    
+    /* Select2 styling */
+    .select2-container {
+        width: 100% !important;
+    }
+    
+    .select2-container--default .select2-selection--single {
+        height: 38px !important;
+        padding: 5px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+    }
+    
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 26px !important;
+    }
+    
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 36px !important;
+    }
+    
+    /* Select2 dropdown z-index fix for modals */
+    .select2-container--open {
+        z-index: 9999999;
+    }
+    
+    .select2-dropdown {
+        z-index: 9999999;
+    }
+
+    /* Badge styling */
+    .badge {
+        font-size: 0.75em;
+        padding: 0.35em 0.65em;
+        font-weight: 600;
+    }
+
+    /* Action buttons */
+    .btn-group .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+</style>
+{% endblock custom_css %}
+
+{% block content %}
+<div class="ec-content-wrapper">
+    <div class="content">
+        <div class="breadcrumb-wrapper breadcrumb-contacts">
+            <div>
+                <h1>Delivery Charges</h1>
+                <p class="breadcrumbs">
+                    <span><a href="{% url 'dashboard' %}">Home</a></span>
+                    <span><i class="mdi mdi-chevron-right"></i></span>Delivery Charges
+                </p>
+            </div>
+            <div>
+                <button type="button" class="btn btn-primary" id="addChargeBtn">
+                    <i class="mdi mdi-plus"></i> Add New Charge
+                </button>
+            </div>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="row">
+            <div class="col-12">
+                <div class="ec-vendor-list card card-default">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table id="delivery-charge-table" class="table table-hover" style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>District</th>
+                                        <th>Thana / Upazila</th>
+                                        <th>Amount (TK)</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for charge in charges %}
+                                    <tr>
+                                        <td>{{ charge.id }}</td>
+                                        <td><strong>{{ charge.district }}</strong></td>
+                                        <td>
+                                            {% if charge.thana %}
+                                                {{ charge.thana }}
+                                            {% else %}
+                                                <span class="badge badge-info">All Thanas</span>
+                                            {% endif %}
+                                        </td>
+                                        <td><strong>৳{{ charge.amount }}</strong></td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <button class="btn btn-sm btn-warning edit-btn" 
+                                                        data-id="{{ charge.id }}"
+                                                        data-district="{{ charge.district }}"
+                                                        data-thana="{{ charge.thana|default:'' }}"
+                                                        data-amount="{{ charge.amount }}"
+                                                        title="Edit">
+                                                    <i class="mdi mdi-pencil"></i>
+                                                </button>
+
+                                                <button class="btn btn-sm btn-danger delete-btn" 
+                                                        data-id="{{ charge.id }}"
+                                                        title="Delete">
+                                                    <i class="mdi mdi-delete"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4">
+                                            <i class="mdi mdi-currency-bdt" style="font-size: 48px; color: #6c757d;"></i>
+                                            <h5 class="mt-2">No delivery charges set yet</h5>
+                                            <button type="button" class="btn btn-primary mt-2" id="addFirstChargeBtn">
+                                                <i class="mdi mdi-plus"></i> Add First Charge
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Add Modal -->
+<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addModalLabel">Add Delivery Charge</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{% url 'delivery_charge_add' %}" method="POST">
+                {% csrf_token %}
+                <div class="modal-body">
+                    
+                    <div class="form-group mb-3">
+                        <label class="form-label">District <span class="text-danger">*</span></label>
+                        <select name="district" id="add-district-select" class="form-control" required>
+                            <option value="">Select District</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="form-label">Thana / Upazila (Optional)</label>
+                        <select name="thana" id="add-thana-select" class="form-control" disabled>
+                            <option value="">All Thanas</option>
+                        </select>
+                        <small class="text-muted">Leave empty to apply to whole district.</small>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="form-label">Amount (TK) <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" name="amount" class="form-control" required placeholder="e.g. 120">
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel">Edit Delivery Charge</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editForm" method="POST">
+                {% csrf_token %}
+                <div class="modal-body">
+                    
+                    <div class="form-group mb-3">
+                        <label class="form-label">District <span class="text-danger">*</span></label>
+                        <input type="text" name="district" id="edit-district" class="form-control" required readonly>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="form-label">Thana</label>
+                        <input type="text" name="thana" id="edit-thana" class="form-control" placeholder="All Thanas" readonly>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="form-label">Amount (TK) <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" name="amount" id="edit-amount" class="form-control" required>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this delivery charge?</p>
+                <p class="text-danger"><strong>This action cannot be undone.</strong></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <a href="#" id="confirmDeleteBtn" class="btn btn-danger">Delete</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block custom_js %}
+<!-- Data Tables JS -->
+<script src="{% static 'assets/plugins/data-tables/jquery.datatables.min.js' %}"></script>
+<script src="{% static 'assets/plugins/data-tables/datatables.bootstrap5.min.js' %}"></script>
+<script src="{% static 'assets/plugins/data-tables/datatables.responsive.min.js' %}"></script>
+
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        console.log("DOM Ready - Initializing...");
+
+        // DHAKA URBAN THANAS - Complete List (as seen in other e-commerce sites)
+        const DHAKA_THANAS = [
+            "Adabor", "Airport", "Badda", "Banani", "Bangshal", "Bhashantek",
+            "Cantonment", "Chackbazar", "Dakshinkhan", "Darus Salam", "Demra",
+            "Dhamrai", "Dhanmondi", "Dohar", "Gendaria", "Gulshan", "Hazaribagh",
+            "Jatrabari", "Kafrul", "Kalabagan", "Kamrangirchar", "Keraniganj",
+            "Khilgaon", "Khilkhet", "Kotwali", "Lalbagh", "Mirpur", "Mohammadpur",
+            "Motijheel", "Nawabganj", "New Market", "Pallabi", "Paltan", "Ramna",
+            "Rampura", "Sabujbagh", "Savar", "Shah Ali", "Shahbagh", "Shahjahanpur",
+            "Sher-e-Bangla Nagar", "Shyampur", "South Keraniganj", "Sutrapur",
+            "Tejgaon", "Tejgaon Industrial", "Turag", "Uttara", "Uttarkhan", "Vatara"
+        ];
+
+        // --- 1. MOVE MODALS TO BODY ---
+        $("#addModal").appendTo("body");
+        $("#editModal").appendTo("body");
+        $("#deleteModal").appendTo("body");
+
+        // --- 2. INITIALIZE DATATABLE ---
+        var table = $('#delivery-charge-table').DataTable({
+            "pageLength": 10,
+            "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+            "responsive": true,
+            "order": [[0, 'desc']],
+            "language": {
+                "emptyTable": "No delivery charges found",
+                "info": "Showing _START_ to _END_ of _TOTAL_ entries",
+                "infoEmpty": "Showing 0 to 0 of 0 entries",
+                "infoFiltered": "(filtered from _MAX_ total entries)",
+                "lengthMenu": "Show _MENU_ entries",
+                "search": "Search charges:",
+                "zeroRecords": "No matching records found"
+            },
+            "columnDefs": [
+                { "orderable": false, "targets": [4] },
+                { "searchable": false, "targets": [4] }
+            ]
+        });
+
+        // --- 3. INITIALIZE SELECT2 ---
+        function initializeSelect2() {
+            $('#add-district-select').select2({
+                theme: 'bootstrap',
+                placeholder: 'Select District',
+                allowClear: true,
+                dropdownParent: $('#addModal')
+            });
+
+            $('#add-thana-select').select2({
+                theme: 'bootstrap',
+                placeholder: 'All Thanas',
+                allowClear: true,
+                dropdownParent: $('#addModal')
+            });
+        }
+
+        // --- 4. LOAD DISTRICTS FROM BD API v2.0 ---
+        function loadDistricts() {
+            const addDistrictSelect = $('#add-district-select');
+            
+            addDistrictSelect.html('<option value="">Loading districts...</option>');
+            
+            fetch('https://bdapis.vercel.app/geo/v2.0/districts')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Districts loaded:", data);
+                    
+                    addDistrictSelect.html('<option value="">Select District</option>');
+                    
+                    const sorted = data.data.sort((a, b) => a.name.localeCompare(b.name));
+                    
+                    sorted.forEach(district => {
+                        const option = new Option(
+                            `${district.name} (${district.bn_name})`,
+                            district.name,
+                            false,
+                            false
+                        );
+                        option.setAttribute('data-id', district.id);
+                        addDistrictSelect.append(option);
+                    });
+                    
+                    addDistrictSelect.trigger('change');
+                })
+                .catch(error => {
+                    console.error("Error loading districts:", error);
+                    addDistrictSelect.html('<option value="">Error loading districts</option>');
+                    alert('Failed to load districts. Please check your internet connection.');
+                });
+        }
+
+        // --- 5. LOAD THANAS/UPAZILAS BASED ON DISTRICT ---
+        $('#add-district-select').on('change', function() {
+            const addThanaSelect = $('#add-thana-select');
+            const selectedOption = $(this).find('option:selected');
+            const districtName = $(this).val();
+            const districtId = selectedOption.data('id');
+            
+            // Reset thana dropdown
+            addThanaSelect.html('<option value="">All Thanas</option>');
+            addThanaSelect.prop('disabled', true);
+            addThanaSelect.trigger('change');
+            
+            if (!districtId) return;
+            
+            // SPECIAL CASE: DHAKA - Use custom list
+            if (districtName === 'Dhaka') {
+                console.log("Loading Dhaka thanas (custom list)");
+                
+                addThanaSelect.html('<option value="">All Thanas</option>');
+                
+                // Add all Dhaka thanas
+                DHAKA_THANAS.forEach(thana => {
+                    const option = new Option(thana, thana, false, false);
+                    addThanaSelect.append(option);
+                });
+                
+                addThanaSelect.prop('disabled', false);
+                addThanaSelect.trigger('change');
+                
+            } else {
+                // ALL OTHER DISTRICTS: Use BD API
+                addThanaSelect.html('<option value="">Loading upazilas...</option>');
+                
+                fetch(`https://bdapis.vercel.app/geo/v2.0/upazilas/${districtId}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log("Upazilas loaded:", data);
+                        
+                        addThanaSelect.html('<option value="">All Thanas</option>');
+                        
+                        data.data.forEach(upazila => {
+                            const option = new Option(
+                                `${upazila.name} (${upazila.bn_name})`,
+                                upazila.name,
+                                false,
+                                false
+                            );
+                            addThanaSelect.append(option);
+                        });
+                        
+                        addThanaSelect.prop('disabled', false);
+                        addThanaSelect.trigger('change');
+                    })
+                    .catch(error => {
+                        console.error("Error loading upazilas:", error);
+                        addThanaSelect.html('<option value="">Error loading upazilas</option>');
+                    });
+            }
+        });
+
+        // --- 6. OPEN ADD MODAL ---
+        $('#addChargeBtn, #addFirstChargeBtn').on('click', function(e) {
+            e.preventDefault();
+            console.log("Add button clicked");
+            
+            var addModal = new bootstrap.Modal(document.getElementById('addModal'));
+            addModal.show();
+        });
+
+        // --- 7. RESET FORM WHEN MODAL CLOSES ---
+        $('#addModal').on('hidden.bs.modal', function() {
+            $(this).find('form')[0].reset();
+            $('#add-thana-select').html('<option value="">All Thanas</option>').prop('disabled', true);
+            $('#add-district-select, #add-thana-select').val('').trigger('change');
+        });
+
+        // --- 8. HANDLE EDIT BUTTON ---
+        $(document).on('click', '.edit-btn', function(e) {
+            e.preventDefault();
+            
+            const btn = $(this);
+            const id = btn.data('id');
+            const district = btn.data('district');
+            const thana = btn.data('thana');
+            const amount = btn.data('amount');
+
+            console.log("Edit clicked:", { id, district, thana, amount });
+
+            $('#edit-district').val(district);
+            $('#edit-thana').val(thana || '');
+            $('#edit-amount').val(amount);
+
+            $('#editForm').attr('action', '{% url "delivery_charge_edit" 0 %}'.replace('0', id));
+            
+            var editModal = new bootstrap.Modal(document.getElementById('editModal'));
+            editModal.show();
+        });
+
+        // --- 9. HANDLE DELETE BUTTON ---
+        $(document).on('click', '.delete-btn', function(e) {
+            e.preventDefault();
+            
+            const id = $(this).data('id');
+            console.log("Delete clicked:", id);
+            
+            $('#confirmDeleteBtn').attr('href', '{% url "delivery_charge_delete" 0 %}'.replace('0', id));
+            
+            var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            deleteModal.show();
+        });
+
+        // --- 10. INITIALIZE EVERYTHING ---
+        initializeSelect2();
+        loadDistricts();
+
+        console.log("Initialization complete");
+    });
+</script>
+{% endblock custom_js %}

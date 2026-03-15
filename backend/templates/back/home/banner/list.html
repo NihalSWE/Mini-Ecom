@@ -1,0 +1,188 @@
+{% extends "back/base.html" %}
+{% load static %}
+
+{% block custom_css %}
+<style>
+    .banner-image {
+        width: 150px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 4px;
+        border: 1px solid #dee2e6;
+    }
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 4px 8px;
+    }
+    .action-buttons {
+        white-space: nowrap;
+    }
+    .order-input {
+        width: 70px;
+        text-align: center;
+    }
+</style>
+{% endblock custom_css %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Slider Banners</h1>
+            <p class="text-muted mb-0">Manage homepage slider banners</p>
+        </div>
+        <a href="{% url 'add_banner' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i> Add New Banner
+        </a>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="row mb-4">
+        <div class="col-12">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                <i class="fas 
+                {% if message.tags == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %} 
+                me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Banners Table -->
+    <div class="card">
+        <div class="card-body">
+            {% if sliders %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th width="50">Order</th>
+                            <th>Image</th>
+                            <th>Title</th>
+                            <th>Subtitle</th>
+                            <th>Price</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for slider in sliders %}
+                        <tr>
+                            <td>
+                                <span class="badge bg-secondary">{{ slider.order }}</span>
+                            </td>
+                            <td>
+                                {% if slider.image %}
+                                <img src="{{ slider.image.url }}" alt="{{ slider.title }}" class="banner-image">
+                                {% else %}
+                                <span class="text-muted">No Image</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong>{{ slider.title|truncatechars:30 }}</strong>
+                            </td>
+                            <td>{{ slider.subtitle|truncatechars:30|default:"-" }}</td>
+                            <td>
+                                {% if slider.price %}
+                                {{ slider.price_text|default:"$" }} {{ slider.price }}
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if slider.status == 'active' %}
+                                <span class="badge bg-success status-badge">Active</span>
+                                {% else %}
+                                <span class="badge bg-secondary status-badge">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ slider.created_at|date:"M d, Y" }}</td>
+                            <td class="text-end action-buttons">
+                                <a href="{% url 'edit_banner' slider.id %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-danger" 
+                                        data-bs-toggle="modal" data-bs-target="#deleteModal{{ slider.id }}">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </td>
+                        </tr>
+
+                        <!-- Delete Modal for each banner -->
+                        <div class="modal fade" id="deleteModal{{ slider.id }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Confirm Delete</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Are you sure you want to delete <strong>"{{ slider.title }}"</strong>?</p>
+                                        <p class="text-danger">This action cannot be undone.</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <button type="button" class="btn btn-danger" 
+                                                onclick="deleteBanner('{{ slider.id }}')" 
+                                                data-bs-dismiss="modal">
+                                            Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-images fa-3x text-muted mb-3"></i>
+                <h5>No banners found</h5>
+                <p class="text-muted">Add your first banner to get started</p>
+                <a href="{% url 'add_banner' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i> Add New Banner
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block custom_js %}
+<script>
+// Simple delete function for modal
+function deleteBanner(id) {
+    let form = new FormData();
+    form.append('id', id);
+    
+    fetch('{% url "delete_banner" %}', {
+        method: 'POST',
+        body: form,
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if(data.success) {
+            // Reload the page after successful delete
+            location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        // Still reload even if there's an error
+        location.reload();
+    });
+}
+</script>
+{% endblock custom_js %}

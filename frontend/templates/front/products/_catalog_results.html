@@ -1,0 +1,98 @@
+{% load static %}
+<div class="shop-pro-content" id="catalogResults">
+    <div class="shop-pro-inner">
+        <div class="row">
+            {% for product in products %}
+            <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6 col-xs-6 mb-6 pro-gl-content">
+                <div class="ec-product-inner">
+                    <div class="ec-pro-image-outer">
+                        <div class="ec-pro-image">
+                            <a href="{% url 'singleproduct' product.slug %}" class="image">
+                                {% if product.thumbnail_image %}
+                                <img class="main-image" src="{{ product.thumbnail_image.url }}" alt="{{ product.title }}">
+                                <img class="hover-image" src="{{ product.thumbnail_image.url }}" alt="{{ product.title }}">
+                                {% else %}
+                                <img class="main-image" src="{% static 'assets/images/product-image/1.jpg' %}" alt="{{ product.title }}">
+                                <img class="hover-image" src="{% static 'assets/images/product-image/1.jpg' %}" alt="{{ product.title }}">
+                                {% endif %}
+                            </a>
+                            {% if product.discount_percentage %}
+                            <span class="percentage">{{ product.discount_percentage }}%</span>
+                            {% endif %}
+                            <span class="flags">
+                                {% if product.new %}<span class="new">New</span>{% endif %}
+                                {% if product.current_discount %}<span class="sale">Sale</span>{% endif %}
+                            </span>
+                            <div class="ec-pro-actions">
+                                <a href="javascript:void(0)"
+                                   class="ec-btn-group add-to-cart ec-home-add-to-cart js-one-click-add"
+                                   data-url="{% url 'add_to_cart' product.id %}"
+                                   title="Add To Cart">
+                                    <i class="fi-rr-shopping-basket"></i>
+                                </a>
+                                <form action="{% url 'buy_now' product.id %}" method="POST" class="ec-buy-now-form">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="qty" value="1">
+                                    <button type="submit" class="ec-btn-group ec-buy-now-btn" title="Buy Now">
+                                        <i class="fi-rr-bolt"></i>
+                                    </button>
+                                </form>
+                                <a href="#"
+                                   class="ec-btn-group quickview"
+                                   title="Quick view"
+                                   data-bs-toggle="modal"
+                                   data-bs-target="#ec_quickview_modal_{{ product.id }}">
+                                    <i class="fi-rr-eye"></i>
+                                </a>
+                            </div>
+                            <div class="ec-pro-loader"></div>
+                        </div>
+                    </div>
+                    <div class="ec-pro-content">
+                        <h5 class="ec-pro-title"><a href="{% url 'singleproduct' product.slug %}">{{ product.title }}</a></h5>
+                        <div class="ec-pro-rating">
+                            {% for i in "12345"|make_list %}
+                                {% if product.avg_rating|default:5|add:0.5 >= forloop.counter %}
+                                <i class="ecicon eci-star fill"></i>
+                                {% else %}
+                                <i class="ecicon eci-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <div class="ec-pro-list-desc">{{ product.short_description|default:"No description available." }}</div>
+                        <span class="ec-price">
+                            {% if product.current_discount %}
+                            <span class="old-price">৳{{ product.selling_price }}</span>
+                            <span class="new-price">৳{{ product.get_discounted_price }}</span>
+                            {% else %}
+                            <span class="new-price">৳{{ product.selling_price }}</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <h5>No products found</h5>
+                <p>Try changing category, price range, or sort options.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="ec-pro-pagination">
+        <span>Showing {{ page_start }}-{{ page_end }} of {{ products.paginator.count }} item(s)</span>
+        {% if products.paginator.num_pages > 1 %}
+        <ul class="ec-pro-pagination-inner">
+            {% if products.has_previous %}
+            <li><a class="js-catalog-page-link" href="?{% if query_without_page %}{{ query_without_page }}&{% endif %}page={{ products.previous_page_number }}"><i class="ecicon eci-angle-left"></i> Prev</a></li>
+            {% endif %}
+            {% for page_number in products.paginator.page_range %}
+            <li><a class="{% if products.number == page_number %}active{% endif %} js-catalog-page-link" href="?{% if query_without_page %}{{ query_without_page }}&{% endif %}page={{ page_number }}">{{ page_number }}</a></li>
+            {% endfor %}
+            {% if products.has_next %}
+            <li><a class="next js-catalog-page-link" href="?{% if query_without_page %}{{ query_without_page }}&{% endif %}page={{ products.next_page_number }}">Next <i class="ecicon eci-angle-right"></i></a></li>
+            {% endif %}
+        </ul>
+        {% endif %}
+    </div>
+</div>

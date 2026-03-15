@@ -1,0 +1,54 @@
+/* print.css - Simple and effective */
+
+@media print {
+    /* Hide everything initially */
+    body * {
+        visibility: hidden;
+    }
+    
+    /* Show only the invoice content */
+    .ec-content-wrapper,
+    .ec-content-wrapper * {
+        visibility: visible;
+    }
+    
+    /* Position the invoice properly */
+    .ec-content-wrapper {
+        position: absolute;
+        top: 20mm;
+        left: 20mm;
+        right: 20mm;
+        bottom: 20mm;
+        margin: 0;
+        padding: 20px;
+        background: white;
+    }
+    
+    /* Hide unwanted elements */
+    .navbar,
+    .sidebar,
+    .ec-header,
+    .ec-footer,
+    .breadcrumb-wrapper,
+    .btn-group {
+        display: none !important;
+    }
+    
+    /* Basic styling for print */
+    .card.invoice-wrapper {
+        border: 1px solid #000;
+        padding: 30px;
+        margin: 0;
+    }
+    
+    /* Force black text */
+    * {
+        color: #000 !important;
+        background: transparent !important;
+    }
+    
+    /* Hide print button */
+    button {
+        display: none !important;
+    }
+}

@@ -1,0 +1,147 @@
+{% extends "back/base.html" %}
+{% load static %}
+
+{% block custom_css %}
+<link href="{% static 'assets/plugins/data-tables/datatables.bootstrap5.min.css' %}" rel="stylesheet"/>
+<link href="{% static 'assets/plugins/data-tables/responsive.datatables.min.css' %}" rel="stylesheet"/>
+<style>
+    .badge-status-read { background-color: #198754 !important; color: #fff; }
+    .badge-status-unread { background-color: #dc3545 !important; color: #fff; }
+    .message-preview {
+        max-width: 320px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>
+{% endblock custom_css %}
+
+{% block content %}
+<div class="ec-content-wrapper">
+    <div class="content">
+        <div class="breadcrumb-wrapper breadcrumb-contacts">
+            <div>
+                <h1>Contact Messages</h1>
+                <p class="breadcrumbs">
+                    <span><a href="{% url 'dashboard' %}">Home</a></span>
+                    <span><i class="mdi mdi-chevron-right"></i></span>Contact Messages
+                </p>
+            </div>
+        </div>
+
+        {% if messages %}
+        <div class="messages mb-3">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="row">
+            <div class="col-12">
+                <div class="ec-vendor-list card card-default">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table id="contactMessageTable" class="table table-hover" style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Phone</th>
+                                        <th>Message</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for contact_message in contact_messages %}
+                                    <tr>
+                                        <td>{{ contact_message.first_name }} {{ contact_message.last_name }}</td>
+                                        <td>{{ contact_message.email }}</td>
+                                        <td>{{ contact_message.phone }}</td>
+                                        <td><div class="message-preview">{{ contact_message.message }}</div></td>
+                                        <td>{{ contact_message.created_at|date:"Y-m-d H:i" }}</td>
+                                        <td>
+                                            {% if contact_message.is_read %}
+                                            <a href="{% url 'contact_message_toggle_read' contact_message.id %}" class="badge badge-status-read text-decoration-none">Read</a>
+                                            {% else %}
+                                            <a href="{% url 'contact_message_toggle_read' contact_message.id %}" class="badge badge-status-unread text-decoration-none">Unread</a>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#messageModal{{ contact_message.id }}" title="View">
+                                                    <i class="mdi mdi-eye"></i>
+                                                </button>
+                                                <a href="{% url 'contact_message_delete' contact_message.id %}" class="btn btn-sm btn-danger" title="Delete" onclick="return confirm('Are you sure you want to delete this message?');">
+                                                    <i class="mdi mdi-delete"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                    <div class="modal fade" id="messageModal{{ contact_message.id }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Customer Message</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p><strong>Name:</strong> {{ contact_message.first_name }} {{ contact_message.last_name }}</p>
+                                                    <p><strong>Email:</strong> {{ contact_message.email }}</p>
+                                                    <p><strong>Phone:</strong> {{ contact_message.phone }}</p>
+                                                    <p><strong>Submitted:</strong> {{ contact_message.created_at|date:"F j, Y g:i A" }}</p>
+                                                    <hr>
+                                                    <p><strong>Message:</strong></p>
+                                                    <div class="p-3 bg-light rounded border">{{ contact_message.message|linebreaksbr }}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="7" class="text-center py-4">
+                                            <i class="mdi mdi-email-outline" style="font-size: 48px; color: #6c757d;"></i>
+                                            <h5 class="mt-2">No contact messages found</h5>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block custom_js %}
+<script src="{% static 'assets/plugins/data-tables/jquery.datatables.min.js' %}"></script>
+<script src="{% static 'assets/plugins/data-tables/datatables.bootstrap5.min.js' %}"></script>
+<script src="{% static 'assets/plugins/data-tables/datatables.responsive.min.js' %}"></script>
+<script>
+  $(document).ready(function() {
+    $('#contactMessageTable').DataTable({
+      pageLength: 10,
+      lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+      responsive: true,
+      order: [[4, 'desc']],
+      language: {
+        emptyTable: "No contact messages found",
+        search: "Search messages:"
+      },
+      columnDefs: [
+        { orderable: false, targets: [6] },
+        { searchable: false, targets: [6] }
+      ]
+    });
+  });
+</script>
+{% endblock custom_js %}

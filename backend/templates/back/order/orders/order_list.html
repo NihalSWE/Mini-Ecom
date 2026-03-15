@@ -1,0 +1,248 @@
+{% extends "back/base.html" %}
+{% load static %}
+
+{% block custom_css %}
+<!-- DataTables CSS -->
+<link href="{% static 'assets/plugins/data-tables/datatables.bootstrap5.min.css' %}" rel="stylesheet"/>
+<link href="{% static 'assets/plugins/data-tables/responsive.datatables.min.css' %}" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    .filter-card {
+        transition: all 0.3s;
+    }
+    .filter-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .status-badge {
+        min-width: 100px;
+        text-align: center;
+    }
+</style>
+{% endblock custom_css %}
+
+{% block content %}
+<div class="ec-content-wrapper">
+    <div class="content">
+        <div class="breadcrumb-wrapper breadcrumb-wrapper-2">
+            <h1>Orders Management</h1>
+            <p class="breadcrumbs">
+                <span><a href="{% url 'dashboard' %}">Home</a></span>
+                <span><i class="mdi mdi-chevron-right"></i></span>Orders
+            </p>
+        </div>
+        
+        <!-- Status Summary Cards -->
+        <div class="row mb-4">
+            <div class="col-md-2 col-sm-4 col-6 mb-3">
+                <a href="?status=pending" class="text-decoration-none">
+                    <div class="card bg-secondary text-white filter-card">
+                        <div class="card-body text-center py-3">
+                            <h5 class="card-title mb-1">{{ pending_count }}</h5>
+                            <p class="card-text small">Pending</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-2 col-sm-4 col-6 mb-3">
+                <a href="?status=processing" class="text-decoration-none">
+                    <div class="card bg-warning text-white filter-card">
+                        <div class="card-body text-center py-3">
+                            <h5 class="card-title mb-1">{{ processing_count }}</h5>
+                            <p class="card-text small">Processing</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-2 col-sm-4 col-6 mb-3">
+                <a href="?status=shipped" class="text-decoration-none">
+                    <div class="card bg-info text-white filter-card">
+                        <div class="card-body text-center py-3">
+                            <h5 class="card-title mb-1">{{ shipped_count }}</h5>
+                            <p class="card-text small">Shipped</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-2 col-sm-4 col-6 mb-3">
+                <a href="?status=delivered" class="text-decoration-none">
+                    <div class="card bg-success text-white filter-card">
+                        <div class="card-body text-center py-3">
+                            <h5 class="card-title mb-1">{{ delivered_count }}</h5>
+                            <p class="card-text small">Delivered</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-2 col-sm-4 col-6 mb-3">
+                <a href="?status=cancelled" class="text-decoration-none">
+                    <div class="card bg-danger text-white filter-card">
+                        <div class="card-body text-center py-3">
+                            <h5 class="card-title mb-1">{{ cancelled_count }}</h5>
+                            <p class="card-text small">Cancelled</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-2 col-sm-4 col-6 mb-3">
+                <a href="?" class="text-decoration-none">
+                    <div class="card bg-primary text-white filter-card">
+                        <div class="card-body text-center py-3">
+                            <h5 class="card-title mb-1">{{ total_orders }}</h5>
+                            <p class="card-text small">Total Orders</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Filter Form -->
+        <div class="card card-default mb-4">
+            <div class="card-header">
+                <h5>Filter Orders</h5>
+            </div>
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="status" class="form-label">Status</label>
+                        <select name="status" id="status" class="form-select">
+                            <option value="">All Status</option>
+                            <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                            <option value="processing" {% if status_filter == 'processing' %}selected{% endif %}>Processing</option>
+                            <option value="shipped" {% if status_filter == 'shipped' %}selected{% endif %}>Shipped</option>
+                            <option value="delivered" {% if status_filter == 'delivered' %}selected{% endif %}>Delivered</option>
+                            <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="district" class="form-label">District</label>
+                        <select name="district" id="district" class="form-select">
+                            <option value="">All Districts</option>
+                            {% for district in districts %}
+                            <option value="{{ district }}" {% if district_filter == district %}selected{% endif %}>{{ district }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="date_from" class="form-label">From Date</label>
+                        <input type="date" name="date_from" id="date_from" class="form-control" value="{{ date_from }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="date_to" class="form-label">To Date</label>
+                        <input type="date" name="date_to" id="date_to" class="form-control" value="{{ date_to }}">
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">Apply Filters</button>
+                        <a href="?" class="btn btn-secondary">Clear Filters</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Orders Table -->
+        <div class="card card-default">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="responsive-data-table" class="table" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Contact</th>
+                                <th>Location</th>
+                                <th>Items</th>
+                                <th>Amount</th>
+                                <th>Payment</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                            <tr>
+                                <td><strong>{{ order.order_id }}</strong></td>
+                                <td>
+                                    {{ order.first_name }} {{ order.last_name }}
+                                </td>
+                                <td>
+                                    <small>{{ order.email }}</small><br>
+                                    <small>{{ order.phone }}</small>
+                                </td>
+                                <td>
+                                    {{ order.district }}<br>
+                                    <small>{{ order.thana }}</small>
+                                </td>
+                                <td>{{ order.items.count }}</td>
+                                <td>
+                                    ৳{{ order.total_amount }}<br>
+                                    <small>+৳{{ order.delivery_charge }} delivery</small>
+                                </td>
+                                <td>{{ order.payment_method }}</td>
+                                <td>
+                                    {% if order.status == 'pending' %}
+                                        <span class="badge badge-secondary status-badge">Pending</span>
+                                    {% elif order.status == 'processing' %}
+                                        <span class="badge badge-warning status-badge">Processing</span>
+                                    {% elif order.status == 'shipped' %}
+                                        <span class="badge badge-info status-badge">Shipped</span>
+                                    {% elif order.status == 'delivered' %}
+                                        <span class="badge badge-success status-badge">Delivered</span>
+                                    {% elif order.status == 'cancelled' %}
+                                        <span class="badge badge-danger status-badge">Cancelled</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ order.created_at|date:"M d, Y" }}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{% url 'order_details' order.order_id %}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="mdi mdi-eye"></i> View
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle dropdown-toggle-split" 
+                                                data-bs-toggle="dropdown">
+                                            <span class="sr-only">Toggle Dropdown</span>
+                                        </button>
+                                        <div class="dropdown-menu">
+                                            <a class="dropdown-item" href="{% url 'order_details' order.order_id %}">
+                                                <i class="mdi mdi-information"></i> Details
+                                            </a>
+                                            <a class="dropdown-item" href="#">
+                                                <i class="mdi mdi-truck-fast"></i> Track
+                                            </a>
+                                            <a class="dropdown-item" href="#">
+                                                <i class="mdi mdi-printer"></i> Print Invoice
+                                            </a>
+                                            <div class="dropdown-divider"></div>
+                                            <a class="dropdown-item text-danger" href="#">
+                                                <i class="mdi mdi-cancel"></i> Cancel
+                                            </a>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="10" class="text-center py-4">
+                                    <i class="mdi mdi-cart-off mdi-48px text-muted"></i>
+                                    <h5 class="mt-2">No orders found</h5>
+                                    <p class="text-muted">Try adjusting your filters</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Results Summary -->
+                <div class="mt-3 text-muted">
+                    Showing {{ orders.count }} order{{ orders.count|pluralize }}
+                    {% if status_filter or district_filter or date_from or date_to %}
+                    (filtered from {{ total_orders }} total)
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

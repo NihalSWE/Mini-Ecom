@@ -1,0 +1,200 @@
+{% load static %}
+<!-- Header -->
+			<header class="ec-main-header" id="header">
+				<nav class="navbar navbar-static-top navbar-expand-lg">
+					<!-- Sidebar toggle button -->
+					<button id="sidebar-toggler" class="sidebar-toggle"></button>
+					<!-- search form -->
+					<div class="search-form d-lg-inline-block">
+						<div class="input-group">
+							<input type="text" name="query" id="search-input" class="form-control"
+								placeholder="Search orders, users, products..." autofocus autocomplete="off"
+								data-search-url="{% url 'admin_search' %}" />
+							<button type="button" name="search" id="search-btn" class="btn btn-flat">
+								<i class="mdi mdi-magnify"></i>
+							</button>
+						</div>
+						<div id="search-results-container">
+							<ul id="search-results"></ul>
+						</div>
+					</div>
+
+					<!-- navbar right -->
+					<div class="navbar-right">
+						<ul class="nav navbar-nav">
+							<li class="dropdown user-menu">
+								<button class="dropdown-toggle nav-link ec-drop" data-bs-toggle="dropdown"
+									aria-expanded="false">
+									<img src="{% if request.user.profile_image %}{{ request.user.profile_image.url }}{% else %}{% static 'assets/img/user/user.png' %}{% endif %}" class="user-image" alt="{{ request.user.get_full_name|default:request.user.email }}" />
+								</button>
+								<ul class="dropdown-menu dropdown-menu-right ec-dropdown-menu">
+									<li class="dropdown-header">
+										<img src="{% if request.user.profile_image %}{{ request.user.profile_image.url }}{% else %}{% static 'assets/img/user/user.png' %}{% endif %}" class="img-circle" alt="{{ request.user.get_full_name|default:request.user.email }}" />
+										<div class="d-inline-block">
+											{{ request.user.get_full_name|default:request.user.email }}
+											<small class="pt-1">{{ request.user.email }}</small>
+										</div>
+									</li>
+									<li>
+										<a href="{% url 'user_profile' %}">
+											<i class="mdi mdi-account"></i> My Profile
+										</a>
+									</li>
+									<li>
+										<a href="{% url 'home' %}">
+											<i class="mdi mdi-web"></i> Visit Site
+										</a>
+									</li>
+									<li class="dropdown-footer">
+										<a href="{% url 'backend_logout' %}">
+											<i class="mdi mdi-logout"></i> Log Out
+										</a>
+									</li>
+								</ul>
+							</li>
+							<li class="dropdown notifications-menu custom-dropdown">
+								<button class="dropdown-toggle notify-toggler custom-dropdown-toggler">
+									<i class="mdi mdi-bell-outline"></i>
+									{% if admin_notification_unread_total %}
+									<span class="badge badge-pill badge-primary">{{ admin_notification_unread_total }}</span>
+									{% endif %}
+								</button>
+
+								<div class="card card-default dropdown-notify dropdown-menu-right mb-0">
+									<div class="card-header card-header-border-bottom d-flex justify-content-between align-items-center px-3">
+										<h2 class="mb-0">Notifications</h2>
+										<a href="{% url 'notification_mark_all_read' %}?next={{ request.path }}" class="btn btn-outline-primary btn-sm">Mark all read</a>
+									</div>
+
+									<div class="card-body px-0 py-0">
+										<ul class="nav nav-tabs nav-style-border p-0 justify-content-between" id="myTab" role="tablist">
+											<li class="nav-item mx-3 my-0 py-0">
+												<a href="#" class="nav-link active pb-3" id="home2-tab"
+													data-bs-toggle="tab" data-bs-target="#home2" role="tab"
+													aria-controls="home2" aria-selected="true">All ({{ admin_notification_unread_total }})</a>
+											</li>
+											<li class="nav-item mx-3 my-0 py-0">
+												<a href="#" class="nav-link pb-3" id="profile2-tab" data-bs-toggle="tab"
+													data-bs-target="#profile2" role="tab" aria-controls="profile2"
+													aria-selected="false">Orders ({{ admin_order_unread_total }})</a>
+											</li>
+											<li class="nav-item mx-3 my-0 py-0">
+												<a href="#" class="nav-link pb-3" id="contact2-tab" data-bs-toggle="tab"
+													data-bs-target="#contact2" role="tab" aria-controls="contact2"
+													aria-selected="false">Users ({{ admin_user_unread_total }})</a>
+											</li>
+											<li class="nav-item mx-3 my-0 py-0">
+												<a href="#" class="nav-link pb-3" id="message2-tab" data-bs-toggle="tab"
+													data-bs-target="#message2" role="tab" aria-controls="message2"
+													aria-selected="false">Messages ({{ admin_contact_unread_total }})</a>
+											</li>
+										</ul>
+
+										<div class="tab-content" id="myNotifications">
+											<div class="tab-pane fade show active" id="home2" role="tabpanel">
+												<ul class="list-unstyled" data-simplebar style="height: 360px">
+													{% for notification in admin_notifications %}
+													<li>
+														<a href="{% url 'notification_open' notification.pk %}" class="media media-message media-notification{% if not notification.is_read %} media-active{% endif %}">
+															<div class="d-flex rounded-circle align-items-center justify-content-center mr-3 media-icon iconbox-45 {{ notification.badge_class }} text-white">
+																<i class="{{ notification.icon_class }} font-size-20"></i>
+															</div>
+															<div class="media-body d-flex justify-content-between">
+																<div class="message-contents">
+																	<h4 class="title">{{ notification.title }}</h4>
+																	<p class="last-msg font-size-14">{{ notification.message }}</p>
+																	<span class="font-size-12 font-weight-medium text-secondary">
+																		<i class="mdi mdi-clock-outline"></i> {{ notification.created_at|timesince }} ago
+																	</span>
+																</div>
+															</div>
+														</a>
+													</li>
+													{% empty %}
+													<li class="px-3 py-4 text-center text-muted">No notifications yet.</li>
+													{% endfor %}
+												</ul>
+											</div>
+
+											<div class="tab-pane fade" id="profile2" role="tabpanel">
+												<ul class="list-unstyled" data-simplebar style="height: 360px">
+													{% for notification in admin_order_notifications %}
+													<li>
+														<a href="{% url 'notification_open' notification.pk %}" class="media media-message media-notification{% if not notification.is_read %} media-active{% endif %}">
+															<div class="d-flex rounded-circle align-items-center justify-content-center mr-3 media-icon iconbox-45 {{ notification.badge_class }} text-white">
+																<i class="{{ notification.icon_class }} font-size-20"></i>
+															</div>
+															<div class="media-body d-flex justify-content-between">
+																<div class="message-contents">
+																	<h4 class="title">{{ notification.title }}</h4>
+																	<p class="last-msg font-size-14">{{ notification.message }}</p>
+																	<span class="font-size-12 font-weight-medium text-secondary">
+																		<i class="mdi mdi-clock-outline"></i> {{ notification.created_at|timesince }} ago
+																	</span>
+																</div>
+															</div>
+														</a>
+													</li>
+													{% empty %}
+													<li class="px-3 py-4 text-center text-muted">No order notifications.</li>
+													{% endfor %}
+												</ul>
+											</div>
+
+											<div class="tab-pane fade" id="contact2" role="tabpanel">
+												<ul class="list-unstyled" data-simplebar style="height: 360px">
+													{% for notification in admin_user_notifications %}
+													<li>
+														<a href="{% url 'notification_open' notification.pk %}" class="media media-message media-notification{% if not notification.is_read %} media-active{% endif %}">
+															<div class="d-flex rounded-circle align-items-center justify-content-center mr-3 media-icon iconbox-45 {{ notification.badge_class }} text-white">
+																<i class="{{ notification.icon_class }} font-size-20"></i>
+															</div>
+															<div class="media-body d-flex justify-content-between">
+																<div class="message-contents">
+																	<h4 class="title">{{ notification.title }}</h4>
+																	<p class="last-msg font-size-14">{{ notification.message }}</p>
+																	<span class="font-size-12 font-weight-medium text-secondary">
+																		<i class="mdi mdi-clock-outline"></i> {{ notification.created_at|timesince }} ago
+																	</span>
+																</div>
+															</div>
+														</a>
+													</li>
+													{% empty %}
+													<li class="px-3 py-4 text-center text-muted">No user notifications.</li>
+													{% endfor %}
+												</ul>
+											</div>
+
+											<div class="tab-pane fade" id="message2" role="tabpanel">
+												<ul class="list-unstyled" data-simplebar style="height: 360px">
+													{% for notification in admin_contact_notifications %}
+													<li>
+														<a href="{% url 'notification_open' notification.pk %}" class="media media-message media-notification{% if not notification.is_read %} media-active{% endif %}">
+															<div class="d-flex rounded-circle align-items-center justify-content-center mr-3 media-icon iconbox-45 {{ notification.badge_class }} text-white">
+																<i class="{{ notification.icon_class }} font-size-20"></i>
+															</div>
+															<div class="media-body d-flex justify-content-between">
+																<div class="message-contents">
+																	<h4 class="title">{{ notification.title }}</h4>
+																	<p class="last-msg font-size-14">{{ notification.message }}</p>
+																	<span class="font-size-12 font-weight-medium text-secondary">
+																		<i class="mdi mdi-clock-outline"></i> {{ notification.created_at|timesince }} ago
+																	</span>
+																</div>
+															</div>
+														</a>
+													</li>
+													{% empty %}
+													<li class="px-3 py-4 text-center text-muted">No contact message notifications.</li>
+													{% endfor %}
+												</ul>
+											</div>
+										</div>
+									</div>
+								</div>
+							</li>
+						</ul>
+					</div>
+				</nav>
+			</header>

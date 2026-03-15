@@ -1,0 +1,517 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <meta charset="UTF-8">
+   <meta http-equiv="x-ua-compatible" content="ie=edge" />
+   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+   
+   <title>{{ site_branding.site_name|default:"Ekka" }}</title>
+   <meta name="keywords" content="apparel, catalog, clean, ecommerce, ecommerce HTML, electronics, fashion, html eCommerce, html store, minimal, multipurpose, multipurpose ecommerce, online store, responsive ecommerce template, shops" />
+   <meta name="description" content="Best ecommerce html template for single and multi vendor store.">
+   <meta name="author" content="ashishmaraviya">
+   
+  <!-- site Favicon -->
+  <link rel="icon" href="{% if site_branding.favicon %}{{ site_branding.favicon.url }}{% else %}{% static 'assets/images/favicon/favicon-7.png' %}{% endif %}" sizes="32x32" />
+  <link rel="apple-touch-icon" href="{% if site_branding.favicon %}{{ site_branding.favicon.url }}{% else %}{% static 'assets/images/favicon/favicon-7.png' %}{% endif %}" />
+  <meta name="msapplication-TileImage" content="{% if site_branding.favicon %}{{ site_branding.favicon.url }}{% else %}{% static 'assets/images/favicon/favicon-7.png' %}{% endif %}" />
+
+  <!-- css Icon Font -->
+  <link rel="stylesheet" href="{% static 'assets/css/vendor/ecicons.min.css'%}" />
+
+  <!-- css All Plugins Files -->
+  <link rel="stylesheet" href="{% static 'assets/css/plugins/animate.css'%}" />
+  <link rel="stylesheet" href="{% static 'assets/css/plugins/swiper-bundle.min.css'%}" />
+  <link rel="stylesheet" href="{% static 'assets/css/plugins/jquery-ui.min.css'%}" />
+  <link rel="stylesheet" href="{% static 'assets/css/plugins/countdownTimer.css'%}" />
+  <link rel="stylesheet" href="{% static 'assets/css/plugins/nouislider.css'%}" />
+  <link rel="stylesheet" href="{% static 'assets/css/plugins/slick.min.css'%}" />
+  <link rel="stylesheet" href="{% static 'assets/css/plugins/owl.carousel.min.css'%}" />
+  <link rel="stylesheet" href="{% static 'assets/css/plugins/owl.theme.default.min.css'%}" />
+  <link rel="stylesheet" href="{% static 'assets/css/plugins/magnific-popup.css'%}" />
+  <link rel="stylesheet" href="{% static 'assets/css/plugins/bootstrap.css'%}" />
+
+  <!-- Main Style -->
+  <link rel="stylesheet" href="{% static 'assets/css/style.css'%}" />
+  <link rel="stylesheet" href="{% static 'assets/css/responsive.css'%}" />
+  {% block custom_css %}
+  
+  {% endblock custom_css %}
+  
+  
+</head>
+<body>
+
+   {% include "front/partial/navbar.html" %}
+
+   {% block content %}{% endblock content %}
+
+   {% include "front/partial/footer.html" %}
+
+   {% if contact_page.whatsapp_phone_digits %}
+   <style>
+      .vaia-whatsapp-widget {
+         position: fixed;
+         right: 18px;
+         bottom: 18px;
+         z-index: 1090;
+         display: flex;
+         align-items: center;
+         gap: 10px;
+         max-width: min(340px, calc(100vw - 36px));
+      }
+
+      .vaia-whatsapp-widget__label {
+         background: #ffffff;
+         color: #1f2937;
+         border-radius: 14px;
+         padding: 10px 14px;
+         box-shadow: 0 10px 25px rgba(15, 23, 42, 0.14);
+         border: 1px solid rgba(15, 23, 42, 0.08);
+         font-size: 14px;
+         font-weight: 500;
+         line-height: 1.3;
+         opacity: 1;
+         transform: translateX(0);
+         transition: opacity 0.25s ease, transform 0.25s ease;
+      }
+
+      .vaia-whatsapp-widget.is-collapsed .vaia-whatsapp-widget__label {
+         opacity: 0;
+         transform: translateX(14px);
+         pointer-events: none;
+      }
+
+      .vaia-whatsapp-widget__toggle {
+         position: relative;
+         display: inline-flex;
+         align-items: center;
+         justify-content: center;
+         width: 58px;
+         height: 58px;
+         border: 0;
+         border-radius: 50%;
+         background: linear-gradient(135deg, #25d366, #18b957);
+         box-shadow: 0 12px 28px rgba(37, 211, 102, 0.35);
+         color: #fff;
+         animation: vaiaWhatsappPulse 1.8s infinite;
+      }
+
+      .vaia-whatsapp-widget__toggle:hover,
+      .vaia-whatsapp-widget__toggle:focus {
+         color: #fff;
+      }
+
+      .vaia-whatsapp-widget__toggle svg {
+         width: 28px;
+         height: 28px;
+         fill: currentColor;
+      }
+
+      .vaia-whatsapp-widget__close {
+         position: absolute;
+         top: -4px;
+         left: -4px;
+         width: 20px;
+         height: 20px;
+         border: 0;
+         border-radius: 50%;
+         background: #fff;
+         color: #111827;
+         box-shadow: 0 6px 18px rgba(15, 23, 42, 0.16);
+         font-size: 14px;
+         line-height: 1;
+      }
+
+      .vaia-whatsapp-widget.is-collapsed .vaia-whatsapp-widget__close {
+         opacity: 0;
+         pointer-events: none;
+      }
+
+      @keyframes vaiaWhatsappPulse {
+         0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.45); }
+         70% { transform: scale(1.05); box-shadow: 0 0 0 16px rgba(37, 211, 102, 0); }
+         100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+      }
+
+      @media (max-width: 575.98px) {
+         .vaia-whatsapp-widget {
+            right: 12px;
+            bottom: 12px;
+         }
+
+         .vaia-whatsapp-widget__label {
+            font-size: 13px;
+            padding: 9px 12px;
+         }
+
+         .vaia-whatsapp-widget__toggle {
+            width: 54px;
+            height: 54px;
+         }
+      }
+   </style>
+
+   <div class="vaia-whatsapp-widget" id="vaiaWhatsAppWidget">
+      <div class="vaia-whatsapp-widget__label" id="vaiaWhatsAppLabel">
+         Live Chat On WhatsApp
+      </div>
+      <button type="button" class="vaia-whatsapp-widget__close" id="vaiaWhatsAppClose" aria-label="Hide WhatsApp label">×</button>
+      <a
+         class="vaia-whatsapp-widget__toggle"
+         id="vaiaWhatsAppLink"
+         href="{{ contact_page.get_whatsapp_url|default:'#' }}"
+         target="_blank"
+         rel="noopener noreferrer"
+         data-phone="{{ contact_page.whatsapp_phone_digits }}"
+         data-site-name="{{ site_branding.site_name|default:'our store' }}"
+         aria-label="Chat on WhatsApp"
+      >
+         <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+            <path d="M19.11 17.29c-.27-.14-1.61-.79-1.86-.88-.25-.09-.43-.14-.61.14-.18.27-.7.88-.86 1.06-.16.18-.32.2-.59.07-.27-.14-1.14-.42-2.17-1.35-.8-.71-1.33-1.59-1.49-1.86-.16-.27-.02-.41.12-.54.12-.12.27-.32.41-.48.14-.16.18-.27.27-.45.09-.18.05-.34-.02-.48-.07-.14-.61-1.47-.84-2.01-.22-.53-.45-.46-.61-.47h-.52c-.18 0-.48.07-.73.34-.25.27-.95.93-.95 2.27s.97 2.63 1.11 2.81c.14.18 1.9 2.9 4.6 4.07.64.27 1.14.43 1.53.55.64.2 1.22.17 1.68.11.51-.08 1.61-.66 1.84-1.29.23-.63.23-1.18.16-1.29-.07-.11-.25-.18-.52-.32zM16.18 4.5c-6.3 0-11.41 5.09-11.41 11.38 0 2.01.53 3.98 1.53 5.71L4.5 27.5l6.08-1.77a11.45 11.45 0 0 0 5.6 1.44h.01c6.29 0 11.39-5.1 11.39-11.39 0-3.04-1.19-5.89-3.34-8.04A11.3 11.3 0 0 0 16.18 4.5zm0 20.73h-.01a9.55 9.55 0 0 1-4.87-1.33l-.35-.21-3.61 1.05.96-3.52-.23-.36a9.45 9.45 0 0 1-1.45-5.02c0-5.23 4.26-9.49 9.5-9.49 2.54 0 4.92.99 6.71 2.78a9.42 9.42 0 0 1 2.78 6.71c0 5.24-4.26 9.49-9.43 9.49z"/>
+         </svg>
+      </a>
+   </div>
+   {% endif %}
+
+   <!-- Footer navigation panel for responsive display -->
+   <div class="ec-nav-toolbar">
+       <div class="container">
+           <div class="ec-nav-panel">
+               <div class="ec-nav-panel-icons">
+                   <a href="#ec-side-cart" class="toggle-cart ec-header-btn ec-side-toggle"><i class="fi-rr-shopping-basket"></i><span
+                           class="ec-cart-noti ec-header-count cart-count-lable ec-cart-count">{{ cart_count }}</span></a>
+               </div>
+               <div class="ec-nav-panel-icons">
+                   <a href="{% url 'home' %}" class="ec-header-btn"><i class="fi-rr-home"></i></a>
+               </div>
+               <div class="ec-nav-panel-icons">
+                   <a href="wishlist.html" class="ec-header-btn"><i class="fi-rr-heart"></i><span class="ec-cart-noti">4</span></a>
+               </div>
+               <div class="ec-nav-panel-icons">
+                   <a href="{% if request.user.is_authenticated %}{% url 'user_dashboard' %}{% else %}{% url 'login' %}{% endif %}" class="ec-header-btn"><i class="fi-rr-user"></i></a>
+               </div>
+           </div>
+       </div>
+   </div>
+   <!-- Footer navigation panel for responsive display end -->
+
+
+   <!-- Add to Cart successfully toast Start -->
+   <div id="addtocart_toast" class="addtocart_toast">
+       <div class="desc">You Have Add To Cart Successfully</div>
+   </div>
+   <div id="wishlist_toast" class="wishlist_toast">
+       <div class="desc">You Have Add To Wishlist Successfully</div>
+   </div>
+   <!-- Add to Cart successfully toast end -->
+
+
+    <!-- Modal -->
+    {% for product in modal_products %}
+    <div class="modal fade" id="ec_quickview_modal_{{ product.id }}" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <button type="button" class="btn-close qty_close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-5 col-sm-12 col-xs-12">
+                            <div class="qty-product-cover">
+                                {% if product.thumbnail_image %}
+                                <div class="qty-slide">
+                                    <img class="img-responsive" src="{{ product.thumbnail_image.url }}" alt="{{ product.title }}">
+                                </div>
+                                {% endif %}
+                                {% for img in product.images.all %}
+                                <div class="qty-slide">
+                                    <img class="img-responsive" src="{{ img.image.url }}" alt="{{ img.alt_text }}">
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <div class="qty-nav-thumb">
+                                {% if product.thumbnail_image %}
+                                <div class="qty-slide">
+                                    <img class="img-responsive" src="{{ product.thumbnail_image.url }}" alt="{{ product.title }}">
+                                </div>
+                                {% endif %}
+                                {% for img in product.images.all %}
+                                <div class="qty-slide">
+                                    <img class="img-responsive" src="{{ img.image.url }}" alt="{{ img.alt_text }}">
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+ 
+                        <div class="col-md-7 col-sm-12 col-xs-12">
+                            <div class="quickview-pro-content">
+                                <h5 class="ec-quick-title"><a href="#">{{ product.title }}</a></h5>
+                                
+                                <div class="ec-quickview-price">
+                                    {% if product.current_discount %}
+                                        <div class="price-container" style="display: flex; flex-wrap: wrap; align-items: center;">
+                                            <span class="new-price">৳{{ product.get_discounted_price }}</span>
+                                            <span class="old-price" style="text-decoration: line-through; color: #777; margin-left: 10px; font-size: 0.9em;">
+                                                ৳{{ product.selling_price }}
+                                            </span>
+                                            <span class="discount-percentage" style="color: #ff0000; font-weight: 600; margin-left: 5px; font-size: 0.8em;">
+                                                (-{{ product.discount_percentage }}%)
+                                            </span>
+                                        </div>
+                                    {% else %}
+                                        <span class="new-price">৳{{ product.selling_price }}</span>
+                                    {% endif %}
+                                </div> 
+                                
+                                <div class="ec-quickview-desc">{{ product.short_description }}</div>
+                                
+                                <div class="ec-quickview-qty">
+                                    <form class="ajax-cart-form" action="{% url 'add_to_cart' product.id %}" method="POST">
+                                        {% csrf_token %}
+                                        <div class="qty-plus-minus">
+                                            <input class="qty-input" type="text" name="qty" value="1" />
+                                        </div>
+                                        <div class="ec-quickview-cart">
+                                            <button type="submit" class="btn btn-primary">Add To Cart</button>
+                                        </div>
+                                    </form>
+                                    </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    <!-- Modal end -->
+
+
+   <!-- Vendor JS -->
+   <script src="{% static 'assets/js/vendor/jquery-3.5.1.min.js'%}"></script>
+   <script src="{% static 'assets/js/vendor/popper.min.js'%}"></script>
+   <script src="{% static 'assets/js/vendor/bootstrap.min.js'%}"></script>
+   <script src="{% static 'assets/js/vendor/jquery-migrate-3.3.0.min.js'%}"></script>
+   <script src="{% static 'assets/js/vendor/jquery.magnific-popup.min.js'%}"></script>
+   <script src="{% static 'assets/js/vendor/modernizr-3.11.2.min.js'%}"></script>
+
+   <!--Plugins JS-->
+   
+   <script src="{% static 'assets/js/plugins/jquery.sticky-sidebar.js'%}"></script>
+   <script src="{% static 'assets/js/plugins/swiper-bundle.min.js'%}"></script>
+   <script src="{% static 'assets/js/plugins/countdownTimer.min.js'%}"></script>
+   <script src="{% static 'assets/js/plugins/nouislider.js'%}"></script>
+   <script src="{% static 'assets/js/plugins/scrollup.js'%}"></script>
+   <script src="{% static 'assets/js/plugins/jquery.zoom.min.js'%}"></script>
+   <script src="{% static 'assets/js/plugins/slick.min.js'%}"></script>
+   <script src="{% static 'assets/js/plugins/owl.carousel.min.js'%}"></script>
+   <script src="{% static 'assets/js/plugins/infiniteslidev2.js'%}"></script>
+   <script src="{% static 'assets/js/plugins/click-to-call.js'%}"></script>
+
+   <!-- Main Js -->
+  
+   
+   {% block core_js %}
+    <script src="{% static 'assets/js/main.js'%}"></script>
+    {% endblock core_js %}
+
+    <script>
+    $(document).ready(function() {
+        const whatsappWidget = document.getElementById('vaiaWhatsAppWidget');
+        const whatsappLink = document.getElementById('vaiaWhatsAppLink');
+        const whatsappClose = document.getElementById('vaiaWhatsAppClose');
+
+        if (whatsappWidget && whatsappLink) {
+            whatsappLink.addEventListener('click', function() {
+                const phone = this.dataset.phone || '';
+                const siteName = this.dataset.siteName || 'our store';
+                if (!phone) {
+                    return;
+                }
+
+                const currentPage = window.location.href;
+                const message = `Hi, I need assistance from ${siteName}. Page: ${currentPage}`;
+                this.href = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+            });
+
+            if (whatsappClose) {
+                whatsappClose.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    whatsappWidget.classList.add('is-collapsed');
+                });
+            }
+        }
+
+        function openSideCart() {
+            $('.ec-side-cart-overlay').fadeIn();
+            $('#ec-side-cart').addClass('ec-open');
+        }
+
+        function updateCartUi(response) {
+            const cartCount = Math.max(0, parseInt(response.cart_count || 0, 10));
+            $('.cart-count-lable, .ec-cart-count').text(cartCount);
+
+            if (typeof response.sidebar_html === 'string') {
+                $('#side-cart-list').html(response.sidebar_html);
+            }
+
+            if (typeof response.cart_total !== 'undefined') {
+                $('#side-cart-total').text('৳' + response.cart_total);
+            }
+        }
+
+        // Session-backed AJAX add to cart for home/product cards.
+        $(document).on('click', '.js-one-click-add', function(e) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            
+            const $btn = $(this);
+            const url = $btn.data('url');
+            const $icon = $btn.find('i');
+            
+            // Prevent spam clicking
+            if ($btn.hasClass('is-processing')) return;
+            
+            $btn.addClass('is-processing');
+            const originalIconClass = $icon.attr('class');
+            
+            // Visual loading state
+            $icon.attr('class', 'fi-rr-refresh spin-loader'); 
+    
+            $.ajax({
+                type: 'POST',
+                url: url,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                data: {
+                    'qty': 1,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        updateCartUi(response);
+                        openSideCart();
+                        $('#addtocart_toast').addClass('show');
+                        setTimeout(() => { $('#addtocart_toast').removeClass('show'); }, 3000);
+                        $icon.attr('class', 'fi-rr-check');
+                    }
+                },
+                error: function() {
+                    alert("Error adding to cart.");
+                },
+                complete: function() {
+                    // Reset icon after 1 second
+                    setTimeout(() => {
+                        $btn.removeClass('is-processing');
+                        $icon.attr('class', originalIconClass);
+                    }, 1000);
+                }
+            });
+        });
+
+        $(document).on('click', '.js-side-cart-remove', function(e) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+
+            const $btn = $(this);
+            const url = $btn.data('url');
+            const itemId = $btn.data('id');
+
+            $.ajax({
+                type: 'POST',
+                url: url,
+                data: {
+                    id: itemId,
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        updateCartUi(response);
+                    }
+                },
+                error: function() {
+                    alert('Error removing item.');
+                }
+            });
+        });
+    });
+    </script>
+    
+    <style>
+        .ec-product-inner .ec-pro-image-outer .ec-pro-image {
+            position: relative;
+        }
+
+        .ec-product-inner .ec-pro-actions {
+            position: absolute;
+            top: 22px;
+            right: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            z-index: 5;
+            margin-top: 6px;
+        }
+
+        .ec-product-inner .ec-pro-actions .ec-btn-group,
+        .ec-product-inner .ec-pro-actions .ec-buy-now-form {
+            position: static !important;
+            top: auto !important;
+            right: auto !important;
+            left: auto !important;
+            bottom: auto !important;
+            margin: 0 !important;
+            transform: none !important;
+        }
+
+        .ec-product-inner .ec-pro-actions > a,
+        .ec-product-inner .ec-pro-actions > form {
+            display: flex;
+            justify-content: center;
+            width: 42px;
+        }
+
+        .ec-product-inner .ec-pro-actions > a.quickview {
+            margin-top: -2px;
+        }
+
+        .js-one-click-add,
+        .ec-home-add-to-cart,
+        .ec-buy-now-btn {
+            cursor: pointer !important;
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ec-buy-now-form {
+            margin: 0;
+            width: 42px;
+        }
+
+        .ec-buy-now-btn {
+            border: 0;
+            background: #0f172a;
+            color: #fff;
+            width: 42px;
+            height: 42px;
+            padding: 0;
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1;
+            border-radius: 50%;
+        }
+    </style>
+    {% block custom_js %}
+    {% endblock custom_js %}
+
+
+   <style>
+    .modal-backdrop { z-index: 1040 !important; opacity: 0.5 !important; }
+    .modal { z-index: 1055 !important; }
+</style>
+
+</body>
+
+</html>

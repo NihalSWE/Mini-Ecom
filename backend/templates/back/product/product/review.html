@@ -1,0 +1,199 @@
+{% extends "back/base.html" %}
+{% load static %}
+
+{% block custom_css %}
+<link href="{% static 'assets/plugins/data-tables/datatables.bootstrap5.min.css' %}" rel="stylesheet"/>
+<link href="{% static 'assets/plugins/data-tables/responsive.datatables.min.css' %}" rel="stylesheet"/>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<style>
+    /* Star Styling */
+    .star-filled { color: #ffc107; font-weight: 900; }
+    .star-empty { color: #e4e4e4; }
+    
+    /* Status Badges (Matching your User List style) */
+    .badge-status-visible { background-color: #28a745 !important; color: white; }
+    .badge-status-hidden { background-color: #dc3545 !important; color: white; }
+    
+    .badge {
+        font-size: 0.75em;
+        padding: 0.35em 0.65em;
+        font-weight: 600;
+        border-radius: 4px;
+    }
+    
+    /* Action Buttons */
+    .btn-group .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+</style>
+{% endblock custom_css %}
+
+{% block content %}
+<div class="ec-content-wrapper">
+    <div class="content">
+        <div class="breadcrumb-wrapper breadcrumb-contacts">
+            <div>
+                <h1>Customer Reviews</h1>
+                <p class="breadcrumbs">
+                    <span><a href="{% url 'dashboard' %}">Home</a></span>
+                    <span><i class="mdi mdi-chevron-right"></i></span>Reviews
+                </p>
+            </div>
+            </div>
+
+        {% if messages %}
+        <div class="messages mb-3">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="row">
+            <div class="col-12">
+                <div class="ec-vendor-list card card-default">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table id="reviewTable" class="table table-hover" style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Reviewer</th>
+                                        <th>Reviewer Number</th>
+                                        <th>Rating</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for review in reviews %}
+                                    <tr>
+                                        <td><strong>{{ review.product.title }}</strong></td>
+
+                                        <td>{{ review.name }}</td>
+                                        <td>{{ review.number }}</td>
+
+                                        <td>
+                                            <div style="white-space: nowrap;">
+                                                {% with ''|center:5 as range %}
+                                                {% for _ in range %}
+                                                    {% if forloop.counter <= review.rating %}
+                                                        <i class="fa fa-star star-filled"></i>
+                                                    {% else %}
+                                                        <i class="fa-regular fa-star star-empty"></i>
+                                                    {% endif %}
+                                                {% endfor %}
+                                                {% endwith %}
+                                                <span style="display:none;">{{ review.rating }}</span>
+                                            </div>
+                                        </td>
+
+                                        <td>{{ review.created_at|date:"Y-m-d" }}</td>
+
+                                        <td>
+                                            {% if review.status %}
+                                                <a href="{% url 'review_status' review.id %}" class="badge badge-status-visible text-decoration-none" title="Click to Hide">
+                                                    Visible
+                                                </a>
+                                            {% else %}
+                                                <a href="{% url 'review_status' review.id %}" class="badge badge-status-hidden text-decoration-none" title="Click to Show">
+                                                    Hidden
+                                                </a>
+                                            {% endif %}
+                                        </td>
+
+                                        <td>
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#viewModal{{ review.id }}" title="View Details">
+                                                    <i class="mdi mdi-eye"></i>
+                                                </button>
+
+                                                <a href="{% url 'review_delete' review.id %}" class="btn btn-sm btn-danger" 
+                                                   title="Delete" onclick="return confirm('Are you sure you want to delete this review?');">
+                                                    <i class="mdi mdi-delete"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                    <div class="modal fade" id="viewModal{{ review.id }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Review Details</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p><strong>Product:</strong> {{ review.product.title }}</p>
+                                                    <hr>
+                                                    <p><strong>Reviewer:</strong> {{ review.name }}</p>
+                                                    <p><strong>Email:</strong> {{ review.email }}</p>
+                                                    <p><strong>Phone:</strong> {{ review.number }}</p>
+                                                    <hr>
+                                                    <p><strong>Review:</strong></p>
+                                                    <div class="p-3 bg-light rounded border">
+                                                        {{ review.review }}
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="6" class="text-center py-4">
+                                            <i class="mdi mdi-comment-remove-outline" style="font-size: 48px; color: #6c757d;"></i>
+                                            <h5 class="mt-2">No reviews found</h5>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block custom_js %}
+<script src="{% static 'assets/plugins/data-tables/jquery.datatables.min.js' %}"></script>
+<script src="{% static 'assets/plugins/data-tables/datatables.bootstrap5.min.js' %}"></script>
+<script src="{% static 'assets/plugins/data-tables/datatables.responsive.min.js' %}"></script>
+
+<script>
+  $(document).ready(function() {
+    // Initialize DataTable (Config copied from User List)
+    $('#reviewTable').DataTable({
+      "pageLength": 10,
+      "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+      "responsive": true,
+      "order": [[3, 'desc']], // Sort by Date column (Index 3) descending by default
+      "language": {
+        "emptyTable": "No reviews found",
+        "info": "Showing _START_ to _END_ of _TOTAL_ entries",
+        "infoEmpty": "Showing 0 to 0 of 0 entries",
+        "infoFiltered": "(filtered from _MAX_ total entries)",
+        "lengthMenu": "Show _MENU_ entries",
+        "search": "Search reviews:",
+        "zeroRecords": "No matching records found"
+      },
+      "columnDefs": [
+        { "orderable": false, "targets": [5] }, // Disable sorting on Action column
+        { "searchable": false, "targets": [5] } // Disable search on Action column
+      ]
+    });
+  });
+</script>
+{% endblock custom_js %}

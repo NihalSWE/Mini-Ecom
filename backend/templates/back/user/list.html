@@ -1,0 +1,263 @@
+{% extends "back/base.html" %} 
+{% load static %} 
+
+{% block custom_css %}
+<link href="{% static 'assets/plugins/data-tables/datatables.bootstrap5.min.css' %}" rel="stylesheet"/>
+<link href="{% static 'assets/plugins/data-tables/responsive.datatables.min.css' %}" rel="stylesheet"/>
+<style>
+    /* Custom badge colors for status and user type */
+    .badge-status-active { background-color: #28a745 !important; }
+    .badge-status-inactive { background-color: #6c757d !important; }
+    .badge-status-suspended { background-color: #dc3545 !important; }
+    .badge-type-admin { background-color: #dc3545 !important; }
+    .badge-type-customer { background-color: #007bff !important; }
+    .badge-type-vendor { background-color: #ffc107 !important; color: #212529 !important; }
+    
+    /* Fix badge styling */
+    .badge {
+        font-size: 0.75em;
+        padding: 0.35em 0.65em;
+        font-weight: 600;
+    }
+    
+    /* Profile image styling */
+    .vendor-thumb {
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    
+    /* Action buttons */
+    .btn-group .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+</style>
+{% endblock custom_css %} 
+
+{% block content %}
+<div class="ec-content-wrapper">
+  <div class="content">
+    <div class="breadcrumb-wrapper breadcrumb-contacts">
+      <div>
+        <h1>User List</h1>
+        <p class="breadcrumbs">
+          <span><a href="{% url 'dashboard' %}">Home</a></span>
+          <span><i class="mdi mdi-chevron-right"></i></span>Users
+        </p>
+      </div>
+      <div>
+        <a href="{% url 'add_user' %}" class="btn btn-primary">
+          <i class="mdi mdi-plus"></i> Add User
+        </a>
+      </div>
+    </div>
+    
+    <!-- Display Messages -->
+    {% if messages %}
+    <div class="messages mb-3">
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Filters -->
+    <div class="card card-default mb-4">
+      <div class="card-body">
+        <form method="GET" action="{% url 'user_list' %}" class="row g-3">
+          <div class="col-md-4">
+            <label for="search" class="form-label">Search</label>
+            <input type="text" class="form-control" id="search" name="search" 
+                   placeholder="Search by name, email, or phone" value="{{ search_query }}">
+          </div>
+          <div class="col-md-3">
+            <label for="user_type" class="form-label">User Type</label>
+            <select class="form-control" id="user_type" name="user_type">
+              <option value="all" {% if user_type_filter == 'all' %}selected{% endif %}>All Types</option>
+              <option value="0" {% if user_type_filter == '0' %}selected{% endif %}>Admin</option>
+              <option value="1" {% if user_type_filter == '1' %}selected{% endif %}>Customer</option>
+              <option value="2" {% if user_type_filter == '2' %}selected{% endif %}>Vendor</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label for="status" class="form-label">Status</label>
+            <select class="form-control" id="status" name="status">
+              <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Status</option>
+              <option value="0" {% if status_filter == '0' %}selected{% endif %}>Inactive</option>
+              <option value="1" {% if status_filter == '1' %}selected{% endif %}>Active</option>
+              <option value="2" {% if status_filter == '2' %}selected{% endif %}>Suspended</option>
+            </select>
+          </div>
+          <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">Filter</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    
+    <!-- User Count -->
+    <div class="alert alert-info">
+      <i class="mdi mdi-information"></i>
+      Showing {{ filtered_count }} user(s) 
+      {% if search_query or user_type_filter != 'all' or status_filter != 'all' %}
+        (filtered from {{ total_users }} total)
+      {% endif %}
+    </div>
+    
+    <div class="row">
+      <div class="col-12">
+        <div class="ec-vendor-list card card-default">
+          <div class="card-body">
+            <div class="table-responsive">
+              <table id="user-list-table" class="table table-hover" style="width:100%">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Profile</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>User Type</th>
+                    <th>Status</th>
+                    <th>Active</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for user in users %}
+                  <tr>
+                    <td>{{ user.id }}</td>
+                    <td>
+                      <img class="vendor-thumb" 
+                           src="{% if user.profile_image %}{{ user.profile_image.url }}{% else %}{% static 'assets/img/default-avatar.jpg' %}{% endif %}" 
+                           alt="user profile"
+                           width="40"
+                           height="40">
+                    </td>
+                    <td>
+                      <strong>{{ user.first_name }} {{ user.last_name }}</strong>
+                    </td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.phone|default:"-" }}</td>
+                    
+                    <!-- User Type -->
+                    <td>
+                      {% if user.user_type == 0 %}
+                        <span class="badge badge-type-admin">Admin</span>
+                      {% elif user.user_type == 1 %}
+                        <span class="badge badge-type-customer">Customer</span>
+                      {% elif user.user_type == 2 %}
+                        <span class="badge badge-type-vendor">Vendor</span>
+                      {% else %}
+                        <span class="badge bg-secondary">Unknown</span>
+                      {% endif %}
+                    </td>
+                    
+                    <!-- Status -->
+                    <td>
+                      {% if user.status == 0 %}
+                        <span class="badge badge-status-inactive">Inactive</span>
+                      {% elif user.status == 1 %}
+                        <span class="badge badge-status-active">Active</span>
+                      {% elif user.status == 2 %}
+                        <span class="badge badge-status-suspended">Suspended</span>
+                      {% else %}
+                        <span class="badge bg-secondary">Unknown</span>
+                      {% endif %}
+                    </td>
+                    
+                    <!-- Active Status -->
+                    <td>
+                      {% if user.is_active %}
+                        <span class="badge bg-success">Yes</span>
+                      {% else %}
+                        <span class="badge bg-danger">No</span>
+                      {% endif %}
+                    </td>
+                    
+                    <td>{{ user.created_at|date:"Y-m-d" }}</td>
+                    <td>
+                      <div class="btn-group">
+                        <a href="{% url 'edit_user' user.id %}" class="btn btn-sm btn-warning" title="Edit">
+                          <i class="mdi mdi-pencil"></i>
+                        </a>
+                        {% if user.id != request.user.id %}
+                        <a href="{% url 'toggle_user_status' user.id %}" class="btn btn-sm {% if user.is_active %}btn-danger{% else %}btn-success{% endif %}" 
+                           title="{% if user.is_active %}Deactivate{% else %}Activate{% endif %}" 
+                           onclick="return confirm('Are you sure you want to {% if user.is_active %}deactivate{% else %}activate{% endif %} this user?');">
+                          <i class="mdi mdi-account-{% if user.is_active %}remove{% else %}check{% endif %}"></i>
+                        </a>
+                        <a href="{% url 'delete_user' user.id %}" class="btn btn-sm btn-danger" 
+                           title="Delete" onclick="return confirm('Are you sure you want to delete this user?');">
+                          <i class="mdi mdi-delete"></i>
+                        </a>
+                        {% endif %}
+                      </div>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="10" class="text-center py-4">
+                      <i class="mdi mdi-account-off" style="font-size: 48px; color: #6c757d;"></i>
+                      <h5 class="mt-2">No users found</h5>
+                      {% if search_query or user_type_filter != 'all' or status_filter != 'all' %}
+                        <p class="text-muted">Try changing your filters</p>
+                      {% else %}
+                        <a href="{% url 'add_user' %}" class="btn btn-primary mt-2">
+                          <i class="mdi mdi-plus"></i> Add First User
+                        </a>
+                      {% endif %}
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block custom_js %}
+<!-- Data Tables JS -->
+<script src="{% static 'assets/plugins/data-tables/jquery.datatables.min.js' %}"></script>
+<script src="{% static 'assets/plugins/data-tables/datatables.bootstrap5.min.js' %}"></script>
+<script src="{% static 'assets/plugins/data-tables/datatables.responsive.min.js' %}"></script>
+
+<script>
+  $(document).ready(function() {
+    // Initialize DataTable
+    $('#user-list-table').DataTable({
+      "pageLength": 10,
+      "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+      "responsive": true,
+      "order": [[0, 'desc']],
+      "language": {
+        "emptyTable": "No users found",
+        "info": "Showing _START_ to _END_ of _TOTAL_ entries",
+        "infoEmpty": "Showing 0 to 0 of 0 entries",
+        "infoFiltered": "(filtered from _MAX_ total entries)",
+        "lengthMenu": "Show _MENU_ entries",
+        "search": "Search in table:",
+        "zeroRecords": "No matching records found"
+      },
+      "columnDefs": [
+        { "orderable": false, "targets": [1, 9] }, // Disable sorting on profile and actions columns
+        { "searchable": false, "targets": [1, 5, 6, 7, 9] } // Disable search on these columns
+      ]
+    });
+    
+    // Apply existing filters to DataTables search
+    {% if search_query %}
+    $('#user-list-table').DataTable().search('{{ search_query }}').draw();
+    {% endif %}
+  });
+</script>
+{% endblock custom_js %}

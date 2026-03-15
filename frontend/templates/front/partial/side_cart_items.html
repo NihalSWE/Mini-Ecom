@@ -1,0 +1,21 @@
+{% load static %}
+{% if side_cart_items %}
+    {% for item in side_cart_items %}
+    <li data-cart-item-id="{{ item.product.id }}">
+        <a href="{% url 'singleproduct' item.product.slug %}" class="sidecart_pro_img">
+            {% if item.product.thumbnail_image %}
+            <img src="{{ item.product.thumbnail_image.url }}" alt="{{ item.product.title }}">
+            {% else %}
+            <img src="{% static 'assets/images/no-image.jpg' %}" alt="{{ item.product.title }}">
+            {% endif %}
+        </a>
+        <div class="ec-pro-content">
+            <a href="{% url 'singleproduct' item.product.slug %}" class="cart_pro_title">{{ item.product.title }}</a>
+            <span class="cart-price"><span>৳{{ item.price }}</span> x {{ item.quantity }}</span>
+            <a href="#" class="remove js-side-cart-remove" data-id="{{ item.product.id }}" data-url="{% url 'remove_item' %}" aria-label="Remove {{ item.product.title }}">×</a>
+        </div>
+    </li>
+    {% endfor %}
+{% else %}
+    <li class="text-center"><p class="emp-cart-msg mb-0">Your cart is empty!</p></li>
+{% endif %}

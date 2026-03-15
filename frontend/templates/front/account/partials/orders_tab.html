@@ -1,0 +1,49 @@
+<div class="ec-cart-content">
+    <div class="table-content cart-table-content" style="padding: 28px;">
+        <h3 style="margin-bottom: 20px;">Order Status & History</h3>
+        {% if orders %}
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Items</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td>{{ order.order_id }}</td>
+                        <td>{{ order.created_at|date:"M d, Y" }}</td>
+                        <td>
+                            {% if order.status == 'pending' %}
+                            <span class="badge" style="background: #fff3cd; color: #8a6d3b;">Pending</span>
+                            {% elif order.status == 'processing' %}
+                            <span class="badge" style="background: #d1ecf1; color: #0c5460;">Processing</span>
+                            {% elif order.status == 'shipped' %}
+                            <span class="badge" style="background: #cfe2ff; color: #084298;">Shipped</span>
+                            {% elif order.status == 'delivered' %}
+                            <span class="badge" style="background: #d4edda; color: #155724;">Delivered</span>
+                            {% else %}
+                            <span class="badge" style="background: #f8d7da; color: #842029;">Cancelled</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ order.items.count }}</td>
+                        <td>Tk {{ order.total_amount }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <h4>No orders found</h4>
+            <p>You have not placed any orders yet.</p>
+            <a href="{% url 'allProducts' %}" class="btn btn-primary">Shop Now</a>
+        </div>
+        {% endif %}
+    </div>
+</div>

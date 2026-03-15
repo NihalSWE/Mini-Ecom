@@ -1,0 +1,853 @@
+{% extends "back/base.html" %}
+{% load static %}
+{% load math_filters %}
+
+{% block custom_css %}
+<style>
+    .ec-image-preview {
+        max-width: 100%;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+    .image-thumb-preview {
+        max-width: 100%;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 6px;
+    }
+    .avatar-preview, .thumb-preview {
+        border: 2px dashed #dee2e6;
+        border-radius: 8px;
+        padding: 5px;
+        background: #f8f9fa;
+    }
+    .price-input-group {
+        position: relative;
+    }
+    .price-input-group .input-group-text {
+        background-color: #f8f9fa;
+    }
+    .profit-badge {
+        font-size: 0.75rem;
+        padding: 2px 6px;
+        border-radius: 4px;
+    }
+    .image-upload-label {
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .image-upload-label:hover {
+        opacity: 0.8;
+    }
+    .form-error {
+        color: #dc3545;
+        font-size: 0.875em;
+        margin-top: 0.25rem;
+    }
+    .discount-section {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px 0;
+        border: 1px solid #dee2e6;
+    }
+    .discount-form-row {
+        background: white;
+        padding: 15px;
+        border-radius: 6px;
+        margin-bottom: 15px;
+        border: 1px solid #e9ecef;
+    }
+    .price-display {
+        font-size: 1.2rem;
+        font-weight: bold;
+    }
+    .price-original {
+        text-decoration: line-through;
+        color: #6c757d;
+    }
+    .price-discounted {
+        color: #dc3545;
+    }
+    .savings-badge {
+        background-color: #28a745;
+        color: white;
+        padding: 3px 10px;
+        border-radius: 4px;
+        font-size: 0.85rem;
+    }
+    .percentage-fields, .fixed-fields {
+        display: none;
+    }
+</style>
+{% endblock custom_css %}
+
+{% block content %}
+<div class="ec-content-wrapper">
+    <div class="content">
+        <!-- Header -->
+        <div class="breadcrumb-wrapper d-flex align-items-center justify-content-between">
+            <div>
+                <h1>Add Product</h1>
+                <p class="breadcrumbs">
+                    <span><a href="{% url 'dashboard' %}">Home</a></span>
+                    <span><i class="mdi mdi-chevron-right"></i></span>
+                    <span><a href="{% url 'product_list' %}">Products</a></span>
+                    <span><i class="mdi mdi-chevron-right"></i></span>
+                    Add Product
+                </p>
+            </div>
+            <div>
+                <a href="{% url 'product_list' %}" class="btn btn-primary">View All Products</a>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+        <div class="row mb-4">
+            <div class="col-12">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-default">
+                    <div class="card-header card-header-border-bottom">
+                        <h2>Add New Product</h2>
+                    </div>
+
+                    <div class="card-body">
+                        <!-- FORM STARTS HERE - WRAPPING BOTH COLUMNS -->
+                        <form method="POST" enctype="multipart/form-data" id="productForm">
+                            {% csrf_token %}
+                            {{ discount_formset.management_form }}
+                            
+                            <div class="row ec-vendor-uploads">
+                                <!-- Image Upload Section -->
+                                <div class="col-lg-4">
+                                    <div class="ec-vendor-img-upload">
+                                        <h5 class="mb-3">Product Images (800 X 700)</h5>
+                                        
+                                        <!-- Main Thumbnail -->
+                                        <div class="ec-vendor-main-img mb-4">
+                                            <div class="avatar-upload">
+                                                <div class="avatar-edit">
+                                                    <!-- Use Django form field for proper binding -->
+                                                    {{ form.thumbnail_image }}
+                                                    <label for="{{ form.thumbnail_image.id_for_label }}" class="image-upload-label">
+                                                        <img src="{% static 'assets/img/icons/edit.svg' %}" 
+                                                             class="svg_img header_svg" alt="edit" />
+                                                    </label>
+                                                </div>
+                                                <div class="avatar-preview ec-preview">
+                                                    <div class="imagePreview ec-div-preview">
+                                                        <img class="ec-image-preview" id="thumbnailPreview"
+                                                             src="{% static 'assets/img/products/vender-upload-preview.jpg' %}"
+                                                             alt="Main thumbnail preview" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <p class="text-muted small mt-2">{{ form.thumbnail_image.help_text }}</p>
+                                            {% if form.thumbnail_image.errors %}
+                                            <div class="form-error">
+                                                {% for error in form.thumbnail_image.errors %}
+                                                {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+
+                                        <!-- Additional Images -->
+                                        <div class="thumb-upload-set">
+                                            <h6 class="mb-3">Additional Images (Optional)</h6>
+                                            <p class="text-muted small">Recommended display size: 800 X 700. Images are auto-optimized on upload.</p>
+                                            
+                                            <div class="row">
+                                                {% for i in "1234" %}
+                                                <div class="col-6 mb-3">
+                                                    <div class="thumb-upload">
+                                                        <div class="thumb-edit">
+                                                            <input type='file' id="additional_image_{{ i }}" 
+                                                                   name="additional_images" class="ec-image-upload" 
+                                                                   accept=".png, .jpg, .jpeg" multiple />
+                                                            <label for="additional_image_{{ i }}" class="image-upload-label">
+                                                                <img src="{% static 'assets/img/icons/edit.svg' %}" 
+                                                                     class="svg_img header_svg" alt="edit" />
+                                                            </label>
+                                                        </div>
+                                                        <div class="thumb-preview ec-preview">
+                                                            <div class="image-thumb-preview">
+                                                                <img class="image-thumb-preview ec-image-preview" 
+                                                                     id="additionalPreview{{ i }}"
+                                                                     src="{% static 'assets/img/products/vender-upload-thumb-preview.jpg' %}"
+                                                                     alt="Additional image {{ i }}" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                            
+                                            <p class="text-muted small">You can select multiple images at once</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Product Form Fields -->
+                                <div class="col-lg-8">
+                                    <div class="ec-vendor-upload-detail">
+                                        <div class="row g-3">
+                                            <!-- Basic Information -->
+                                            <div class="col-md-6">
+                                                <label class="form-label">SKU *</label>
+                                                {{ form.sku }}
+                                                {% if form.sku.errors %}
+                                                <div class="form-error">{{ form.sku.errors }}</div>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <div class="col-md-6">
+                                                <label class="form-label">Product Name *</label>
+                                                {{ form.title }}
+                                                {% if form.title.errors %}
+                                                <div class="form-error">{{ form.title.errors }}</div>
+                                                {% endif %}
+                                            </div>
+
+                                            <!-- Category & Model -->
+                                            <div class="col-md-6">
+                                                <label class="form-label">Category</label>
+                                                {{ form.category }}
+                                            </div>
+                                            
+                                            <div class="col-md-6">
+                                                <label class="form-label">Model Number</label>
+                                                {{ form.model }}
+                                            </div>
+
+                                            <!-- Pricing Section -->
+                                            <div class="col-12 mt-3">
+                                                <h5>Pricing Information</h5>
+                                                <div class="row g-3">
+                                                    <div class="col-md-4">
+                                                        <div class="price-input-group">
+                                                            <label class="form-label">Cost Price *</label>
+                                                            <div class="input-group">
+                                                                <span class="input-group-text">$</span>
+                                                                {{ form.buy_price }}
+                                                            </div>
+                                                            {% if form.buy_price.errors %}
+                                                            <div class="form-error">{{ form.buy_price.errors }}</div>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="col-md-4">
+                                                        <div class="price-input-group">
+                                                            <label class="form-label">Selling Price *</label>
+                                                            <div class="input-group">
+                                                                <span class="input-group-text">$</span>
+                                                                {{ form.selling_price }}
+                                                            </div>
+                                                            {% if form.selling_price.errors %}
+                                                            <div class="form-error">{{ form.selling_price.errors }}</div>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="col-md-4">
+                                                        <div class="card border-primary">
+                                                            <div class="card-body text-center">
+                                                                <h6 class="card-title">Price After Discount</h6>
+                                                                <div class="price-display">
+                                                                    <span class="price-original" id="originalPrice">$0.00</span>
+                                                                    <br>
+                                                                    <span class="price-discounted" id="discountedPrice">$0.00</span>
+                                                                </div>
+                                                                <div id="discountInfo" class="small mt-2"></div>
+                                                                <div id="profitInfo" class="small mt-1 text-muted"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Discount Management Section -->
+                                            <div class="col-12">
+                                                <div class="discount-section mt-4">
+                                                    <h5 class="mb-3">Product Discounts</h5>
+                                                    <p class="text-muted mb-3">Add discounts that will be applied to the selling price. Discounts are calculated on the selling price, not the cost price.</p>
+                                                    
+                                                    <div id="discount-forms-container">
+                                                        {% for discount_form in discount_formset %}
+                                                        <div class="discount-form-row" id="discount-form-{{ forloop.counter0 }}">
+                                                            {{ discount_form.id }}
+                                                            
+                                                            <div class="row g-3">
+                                                                <div class="col-md-3">
+                                                                    <label class="form-label">Discount Type</label>
+                                                                    {{ discount_form.discount_type }}
+                                                                </div>
+                                                                
+                                                                <!-- Percentage Fields -->
+                                                                <div class="col-md-3 percentage-fields" 
+                                                                     style="display: {% if discount_form.discount_type.value != 'percentage' %}none{% else %}block{% endif %};">
+                                                                    <label class="form-label">Percentage (%)</label>
+                                                                    <div class="input-group">
+                                                                        {{ discount_form.percentage }}
+                                                                        <span class="input-group-text">%</span>
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                <!-- Fixed Amount Fields -->
+                                                                <div class="col-md-3 fixed-fields" 
+                                                                     style="display: {% if discount_form.discount_type.value != 'fixed' %}none{% else %}block{% endif %};">
+                                                                    <label class="form-label">Amount Off</label>
+                                                                    <div class="input-group">
+                                                                        <span class="input-group-text">$</span>
+                                                                        {{ discount_form.discount_value }}
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                <div class="col-md-2">
+                                                                    <label class="form-label">Start Date</label>
+                                                                    {{ discount_form.start_date }}
+                                                                </div>
+                                                                
+                                                                <div class="col-md-2">
+                                                                    <label class="form-label">End Date</label>
+                                                                    {{ discount_form.end_date }}
+                                                                </div>
+                                                                
+                                                                <div class="col-md-1">
+                                                                    <div class="form-check mt-4">
+                                                                        {{ discount_form.active }}
+                                                                        <label class="form-check-label" for="{{ discount_form.active.id_for_label }}">
+                                                                            Active
+                                                                        </label>
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                {% if discount_form.instance.pk %}
+                                                                <div class="col-md-1">
+                                                                    <div class="form-check mt-4">
+                                                                        {{ discount_form.DELETE }}
+                                                                        <label class="form-check-label text-danger" for="{{ discount_form.DELETE.id_for_label }}">
+                                                                            Delete
+                                                                        </label>
+                                                                    </div>
+                                                                </div>
+                                                                {% else %}
+                                                                <div class="col-md-1">
+                                                                    <button type="button" class="btn btn-danger btn-sm mt-4" onclick="removeDiscountForm(this)">
+                                                                        <i class="mdi mdi-delete"></i>
+                                                                    </button>
+                                                                </div>
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                        {% endfor %}
+                                                    </div>
+                                                    
+                                                    <button type="button" class="btn btn-outline-primary btn-sm mt-2" 
+                                                            onclick="addDiscountForm()">
+                                                        <i class="mdi mdi-plus me-1"></i> Add Another Discount
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <!-- Stock Information -->
+                                            <div class="col-md-6">
+                                                <label class="form-label">Stock Quantity</label>
+                                                {{ form.stock_quantity }}
+                                            </div>
+                                            
+                                            <div class="col-md-6">
+                                                <label class="form-label">Stock Status</label>
+                                                {{ form.stock_availability }}
+                                            </div>
+
+                                            <!-- Descriptions -->
+                                            <div class="col-md-12">
+                                                <label class="form-label">Short Description</label>
+                                                {{ form.short_description }}
+                                            </div>
+                                            
+                                            <div class="col-md-12">
+                                                <label class="form-label">Full Description</label>
+                                                {{ form.description }}
+                                            </div>
+                                            
+                                            <div class="col-md-12">
+                                                <label class="form-label">Specifications</label>
+                                                {{ form.specification }}
+                                            </div>
+
+                                            <!-- Status & Flags -->
+                                            <div class="col-md-6">
+                                                <label class="form-label">Product Status</label>
+                                                {{ form.status }}
+                                            </div>
+                                            
+                                            <!-- Feature Flags -->
+                                            <div class="col-md-6">
+                                                <label class="form-label mb-2">Product Flags</label>
+                                                <div class="row">
+                                                    <div class="col-6">
+                                                        <div class="form-check">
+                                                            {{ form.featured }}
+                                                            <label class="form-check-label" for="{{ form.featured.id_for_label }}">Featured</label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            {{ form.best_seller }}
+                                                            <label class="form-check-label" for="{{ form.best_seller.id_for_label }}">Best Seller</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <div class="form-check">
+                                                            {{ form.trending }}
+                                                            <label class="form-check-label" for="{{ form.trending.id_for_label }}">Trending</label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            {{ form.new }}
+                                                            <label class="form-check-label" for="{{ form.new.id_for_label }}">New</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- SEO Fields -->
+                                            <div class="col-md-12">
+                                                <h6 class="mt-4 mb-3">SEO Information (Optional)</h6>
+                                            </div>
+                                            
+                                            <div class="col-md-12">
+                                                <label class="form-label">Meta Title</label>
+                                                {{ form.meta_title }}
+                                            </div>
+                                            
+                                            <div class="col-md-12">
+                                                <label class="form-label">Meta Description</label>
+                                                {{ form.meta_description }}
+                                            </div>
+                                            
+                                            <div class="col-md-12">
+                                                <label class="form-label">Meta Keywords</label>
+                                                {{ form.meta_keywords }}
+                                            </div>
+
+                                            <!-- Submit Button -->
+                                            <div class="col-md-12 mt-4">
+                                                <div class="d-flex justify-content-between">
+                                                    <a href="{% url 'product_list' %}" class="btn btn-secondary">
+                                                        <i class="mdi mdi-arrow-left me-2"></i>Cancel
+                                                    </a>
+                                                    <button type="submit" class="btn btn-primary">
+                                                        <i class="mdi mdi-content-save me-2"></i>Add Product
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        <!-- FORM ENDS HERE -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Template for new discount forms -->
+<template id="discount-form-template">
+    <div class="discount-form-row">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Discount Type</label>
+                <select name="discounts-__prefix__-discount_type" class="form-control discount-type" id="id_discounts-__prefix__-discount_type">
+                    <option value="">---------</option>
+                    <option value="percentage">Percentage</option>
+                    <option value="fixed">Fixed Amount</option>
+                </select>
+            </div>
+            
+            <div class="col-md-3 percentage-fields" style="display: none;">
+                <label class="form-label">Percentage (%)</label>
+                <div class="input-group">
+                    <input type="number" name="discounts-__prefix__-percentage" step="0.01" min="0" max="100" class="form-control percentage-field" id="id_discounts-__prefix__-percentage" placeholder="e.g., 10.00">
+                    <span class="input-group-text">%</span>
+                </div>
+            </div>
+            
+            <div class="col-md-3 fixed-fields" style="display: none;">
+                <label class="form-label">Amount Off</label>
+                <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input type="number" name="discounts-__prefix__-discount_value" step="0.01" min="0" class="form-control fixed-field" id="id_discounts-__prefix__-discount_value" placeholder="e.g., 5.00">
+                </div>
+            </div>
+            
+            <div class="col-md-2">
+                <label class="form-label">Start Date</label>
+                <input type="datetime-local" name="discounts-__prefix__-start_date" class="form-control" id="id_discounts-__prefix__-start_date">
+            </div>
+            
+            <div class="col-md-2">
+                <label class="form-label">End Date</label>
+                <input type="datetime-local" name="discounts-__prefix__-end_date" class="form-control" id="id_discounts-__prefix__-end_date">
+            </div>
+            
+            <div class="col-md-1">
+                <div class="form-check mt-4">
+                    <input type="checkbox" name="discounts-__prefix__-active" class="form-check-input" id="id_discounts-__prefix__-active">
+                    <label class="form-check-label" for="id_discounts-__prefix__-active">Active</label>
+                </div>
+            </div>
+            
+            <div class="col-md-1">
+                <button type="button" class="btn btn-danger btn-sm mt-4" onclick="removeDiscountForm(this)">
+                    <i class="mdi mdi-delete"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</template>
+{% endblock content %}
+
+{% block custom_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Image Preview Functionality
+    function setupImagePreview(inputId, previewId) {
+        const input = document.getElementById(inputId);
+        const preview = document.getElementById(previewId);
+        
+        if (input && preview) {
+            input.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.src = e.target.result;
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+    }
+    
+    // Setup previews
+    setupImagePreview('{{ form.thumbnail_image.id_for_label }}', 'thumbnailPreview');
+    setupImagePreview('additional_image_1', 'additionalPreview1');
+    setupImagePreview('additional_image_2', 'additionalPreview2');
+    setupImagePreview('additional_image_3', 'additionalPreview3');
+    setupImagePreview('additional_image_4', 'additionalPreview4');
+    
+    // Toggle discount fields based on type
+    function toggleDiscountFields(selectElement) {
+        const formRow = selectElement.closest('.discount-form-row');
+        const percentageFields = formRow.querySelector('.percentage-fields');
+        const fixedFields = formRow.querySelector('.fixed-fields');
+        const percentageInput = formRow.querySelector('.percentage-field');
+        const fixedInput = formRow.querySelector('.fixed-field');
+        
+        if (selectElement.value === 'percentage') {
+            percentageFields.style.display = 'block';
+            fixedFields.style.display = 'none';
+            if (percentageInput) {
+                percentageInput.required = true;
+                percentageInput.removeAttribute('readonly');
+            }
+            if (fixedInput) {
+                fixedInput.required = false;
+                fixedInput.value = '';
+                fixedInput.setAttribute('readonly', 'readonly');
+            }
+        } else if (selectElement.value === 'fixed') {
+            percentageFields.style.display = 'none';
+            fixedFields.style.display = 'block';
+            if (percentageInput) {
+                percentageInput.required = false;
+                percentageInput.value = '';
+                percentageInput.setAttribute('readonly', 'readonly');
+            }
+            if (fixedInput) {
+                fixedInput.required = true;
+                fixedInput.removeAttribute('readonly');
+            }
+        } else {
+            percentageFields.style.display = 'none';
+            fixedFields.style.display = 'none';
+            if (percentageInput) {
+                percentageInput.required = false;
+                percentageInput.setAttribute('readonly', 'readonly');
+            }
+            if (fixedInput) {
+                fixedInput.required = false;
+                fixedInput.setAttribute('readonly', 'readonly');
+            }
+        }
+        updatePriceDisplay();
+    }
+    
+    // Initialize existing discount forms
+    document.querySelectorAll('.discount-type').forEach(select => {
+        select.addEventListener('change', function() {
+            toggleDiscountFields(this);
+        });
+        // Trigger once to set initial state
+        toggleDiscountFields(select);
+    });
+    
+    // Calculate and display prices
+    function updatePriceDisplay() {
+        const sellingPrice = parseFloat(document.querySelector('[name="selling_price"]')?.value) || 0;
+        const buyPrice = parseFloat(document.querySelector('[name="buy_price"]')?.value) || 0;
+        
+        // Update original price display
+        document.getElementById('originalPrice').textContent = '$' + sellingPrice.toFixed(2);
+        
+        // Find the best (most valuable) active discount
+        let bestDiscountAmount = 0;
+        let discountInfo = '';
+        
+        const discountForms = document.querySelectorAll('.discount-form-row');
+        discountForms.forEach(form => {
+            const discountType = form.querySelector('.discount-type')?.value;
+            const percentage = parseFloat(form.querySelector('.percentage-field')?.value) || 0;
+            const fixedAmount = parseFloat(form.querySelector('.fixed-field')?.value) || 0;
+            const active = form.querySelector('[name$="-active"]')?.checked || false;
+            
+            if (active && discountType && sellingPrice > 0) {
+                let discountAmount = 0;
+                
+                if (discountType === 'percentage') {
+                    discountAmount = (sellingPrice * percentage) / 100;
+                    if (discountAmount > bestDiscountAmount) {
+                        bestDiscountAmount = discountAmount;
+                        discountInfo = `${percentage}% OFF (Save $${discountAmount.toFixed(2)})`;
+                    }
+                } else if (discountType === 'fixed') {
+                    discountAmount = Math.min(fixedAmount, sellingPrice);
+                    if (discountAmount > bestDiscountAmount) {
+                        bestDiscountAmount = discountAmount;
+                        discountInfo = `$${fixedAmount.toFixed(2)} OFF`;
+                    }
+                }
+            }
+        });
+        
+        // Calculate final price
+        const discountedPrice = Math.max(0, sellingPrice - bestDiscountAmount);
+        const discountPercentage = sellingPrice > 0 ? (bestDiscountAmount / sellingPrice * 100) : 0;
+        const profit = discountedPrice - buyPrice;
+        
+        // Update display
+        document.getElementById('discountedPrice').textContent = '$' + discountedPrice.toFixed(2);
+        
+        const discountInfoDiv = document.getElementById('discountInfo');
+        const profitInfoDiv = document.getElementById('profitInfo');
+        
+        if (bestDiscountAmount > 0) {
+            discountInfoDiv.innerHTML = `
+                <span class="savings-badge">${discountInfo}</span>
+            `;
+            profitInfoDiv.innerHTML = `
+                <span class="${profit >= 0 ? 'text-success' : 'text-danger'}">
+                    ${profit >= 0 ? 'Profit' : 'Loss'}: $${Math.abs(profit).toFixed(2)}
+                </span>
+            `;
+        } else {
+            discountInfoDiv.innerHTML = '<span class="text-muted">No active discounts</span>';
+            profitInfoDiv.innerHTML = `
+                <span class="${profit >= 0 ? 'text-success' : 'text-danger'}">
+                    Profit: $${profit.toFixed(2)}
+                </span>
+            `;
+        }
+    }
+    
+    // Add new discount form
+    window.addDiscountForm = function() {
+        const totalForms = document.getElementById('id_discounts-TOTAL_FORMS');
+        const formNum = parseInt(totalForms.value);
+        const template = document.getElementById('discount-form-template');
+        const newForm = template.content.cloneNode(true);
+        
+        // Update form indices
+        newForm.querySelectorAll('[name]').forEach(element => {
+            const name = element.getAttribute('name');
+            const newName = name.replace(/__prefix__/g, formNum);
+            element.setAttribute('name', newName);
+            element.setAttribute('id', 'id_' + newName);
+        });
+        
+        newForm.querySelectorAll('label').forEach(label => {
+            const forAttr = label.getAttribute('for');
+            if (forAttr) {
+                const newFor = forAttr.replace(/__prefix__/g, formNum);
+                label.setAttribute('for', newFor);
+            }
+        });
+        
+        // Add to container
+        document.getElementById('discount-forms-container').appendChild(newForm);
+        totalForms.value = formNum + 1;
+        
+        // Initialize the new form
+        const newSelect = document.querySelector(`#id_discounts-${formNum}-discount_type`);
+        if (newSelect) {
+            newSelect.addEventListener('change', function() {
+                toggleDiscountFields(this);
+            });
+            // Set initial state
+            toggleDiscountFields(newSelect);
+        }
+        
+        // Add event listeners to new inputs
+        const newFormRow = document.querySelector(`#discount-forms-container .discount-form-row:last-child`);
+        if (newFormRow) {
+            newFormRow.querySelectorAll('.percentage-field, .fixed-field, [name$="-active"]').forEach(field => {
+                field.addEventListener('input', updatePriceDisplay);
+                field.addEventListener('change', updatePriceDisplay);
+            });
+        }
+        
+        // NO DEFAULT DATES SET - User must choose their own dates
+    }
+    
+    // Remove discount form
+    window.removeDiscountForm = function(button) {
+        const formRow = button.closest('.discount-form-row');
+        if (formRow) {
+            formRow.remove();
+            updatePriceDisplay();
+        }
+    }
+    
+    // Price change listeners
+    const sellingPriceInput = document.querySelector('[name="selling_price"]');
+    const buyPriceInput = document.querySelector('[name="buy_price"]');
+    
+    if (sellingPriceInput) sellingPriceInput.addEventListener('input', updatePriceDisplay);
+    if (buyPriceInput) buyPriceInput.addEventListener('input', updatePriceDisplay);
+    
+    // Discount field listeners
+    document.querySelectorAll('.percentage-field, .fixed-field, [name$="-active"]').forEach(field => {
+        field.addEventListener('input', updatePriceDisplay);
+        field.addEventListener('change', updatePriceDisplay);
+    });
+    
+    // Form validation
+    const form = document.getElementById('productForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const sku = document.querySelector('[name="sku"]')?.value.trim();
+            const title = document.querySelector('[name="title"]')?.value.trim();
+            const buyPrice = parseFloat(document.querySelector('[name="buy_price"]')?.value || 0);
+            const sellPrice = parseFloat(document.querySelector('[name="selling_price"]')?.value || 0);
+            const thumbnail = document.querySelector('[name="thumbnail_image"]')?.files[0];
+            
+            // Validate required fields
+            if (!sku) {
+                e.preventDefault();
+                alert('SKU is required');
+                return;
+            }
+            
+            if (!title) {
+                e.preventDefault();
+                alert('Product name is required');
+                return;
+            }
+            
+            // Check if this is a new product (no instance)
+            const isNewProduct = !{{ product.id|default:0 }};
+            if (isNewProduct && !thumbnail) {
+                e.preventDefault();
+                alert('Main product image is required for new products');
+                return;
+            }
+            
+            // Validate prices
+            if (sellPrice <= buyPrice) {
+                e.preventDefault();
+                alert('Selling price must be higher than cost price');
+                return;
+            }
+            
+            // Validate image size (5MB limit)
+            if (thumbnail && thumbnail.size > 5 * 1024 * 1024) {
+                e.preventDefault();
+                alert('Main image size must be less than 5MB');
+                return;
+            }
+            
+            // Validate discount forms (only if user selected a discount type)
+            const discountForms = document.querySelectorAll('.discount-form-row');
+            let hasDiscountErrors = false;
+            
+            discountForms.forEach(formRow => {
+                const discountType = formRow.querySelector('.discount-type')?.value;
+                const startDate = formRow.querySelector('[name$="-start_date"]')?.value;
+                const endDate = formRow.querySelector('[name$="-end_date"]')?.value;
+                
+                // Only validate if discount type is selected
+                if (discountType) {
+                    if (!startDate) {
+                        alert('Start date is required for discount');
+                        hasDiscountErrors = true;
+                        return;
+                    }
+                    
+                    if (!endDate) {
+                        alert('End date is required for discount');
+                        hasDiscountErrors = true;
+                        return;
+                    }
+                    
+                    // Validate date range
+                    if (startDate && endDate && startDate >= endDate) {
+                        alert('End date must be after start date');
+                        hasDiscountErrors = true;
+                        return;
+                    }
+                    
+                    // Validate discount values
+                    if (discountType === 'percentage') {
+                        const percentage = formRow.querySelector('.percentage-field')?.value;
+                        if (!percentage || parseFloat(percentage) <= 0) {
+                            alert('Percentage discount requires a valid percentage value');
+                            hasDiscountErrors = true;
+                        }
+                    } else if (discountType === 'fixed') {
+                        const discountValue = formRow.querySelector('.fixed-field')?.value;
+                        if (!discountValue || parseFloat(discountValue) <= 0) {
+                            alert('Fixed discount requires a valid amount');
+                            hasDiscountErrors = true;
+                        }
+                    }
+                }
+            });
+            
+            if (hasDiscountErrors) {
+                e.preventDefault();
+            }
+        });
+    }
+    
+    // Initial display
+    updatePriceDisplay();
+});
+</script>
+{% endblock custom_js %}

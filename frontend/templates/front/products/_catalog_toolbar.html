@@ -1,0 +1,38 @@
+<div class="ec-pro-list-top d-flex" id="catalogToolbar">
+    <div class="col-md-12 ec-sort-select">
+        <div class="ec-catalog-toolbar">
+            <form method="GET" id="catalogLimitForm">
+                {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category.slug }}">{% endif %}
+                <input type="hidden" name="min_price" value="{{ selected_min_price }}">
+                <input type="hidden" name="max_price" value="{{ selected_max_price }}">
+                <input type="hidden" name="sort" value="{{ selected_sort }}">
+                <span class="sort-by">Show</span>
+                <div class="ec-select-inner">
+                    <select name="per_page" id="catalogPerPageSelect">
+                        <option value="8" {% if selected_per_page == '8' %}selected{% endif %}>8</option>
+                        <option value="12" {% if selected_per_page == '12' %}selected{% endif %}>12</option>
+                        <option value="24" {% if selected_per_page == '24' %}selected{% endif %}>24</option>
+                        <option value="all" {% if selected_per_page == 'all' %}selected{% endif %}>All</option>
+                    </select>
+                </div>
+            </form>
+
+            <form method="GET" id="catalogSortForm">
+                {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category.slug }}">{% endif %}
+                <input type="hidden" name="min_price" value="{{ selected_min_price }}">
+                <input type="hidden" name="max_price" value="{{ selected_max_price }}">
+                <input type="hidden" name="per_page" value="{{ selected_per_page }}">
+                <span class="sort-by">Sort by</span>
+                <div class="ec-select-inner">
+                    <select name="sort" id="catalogSortSelect">
+                        <option value="newest" {% if selected_sort == 'newest' %}selected{% endif %}>Newest</option>
+                        <option value="name_asc" {% if selected_sort == 'name_asc' %}selected{% endif %}>Name, A to Z</option>
+                        <option value="name_desc" {% if selected_sort == 'name_desc' %}selected{% endif %}>Name, Z to A</option>
+                        <option value="price_asc" {% if selected_sort == 'price_asc' %}selected{% endif %}>Price, low to high</option>
+                        <option value="price_desc" {% if selected_sort == 'price_desc' %}selected{% endif %}>Price, high to low</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,28 @@
+<div class="ec-sb-block-content es-price-slider ec-sidebar-dropdown" id="priceFilterBlock">
+    <form method="GET" id="priceFilterForm">
+        {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category.slug }}">{% endif %}
+        <input type="hidden" name="sort" value="{{ selected_sort }}">
+        <input type="hidden" name="per_page" value="{{ selected_per_page }}">
+        <div class="ec-price-filter">
+            <div id="ec-sliderPrice"
+                 data-min="{{ catalog_min_price }}"
+                 data-max="{{ catalog_max_price }}"
+                 data-step="1"
+                 data-start-min="{{ selected_min_price }}"
+                 data-start-max="{{ selected_max_price }}">
+            </div>
+            <div class="ec-price-input">
+                <label class="filter__label">
+                    <input type="text" class="filter__input" name="min_price" value="{{ selected_min_price }}">
+                </label>
+                <span class="ec-price-divider"></span>
+                <label class="filter__label">
+                    <input type="text" class="filter__input" name="max_price" value="{{ selected_max_price }}">
+                </label>
+            </div>
+            <div class="ec-filter-actions">
+                <a class="btn btn-outline-secondary" href="{% url 'allProducts' %}{% if selected_category %}?category={{ selected_category.slug }}{% endif %}" id="priceFilterReset">Reset</a>
+            </div>
+        </div>
+    </form>
+</div>

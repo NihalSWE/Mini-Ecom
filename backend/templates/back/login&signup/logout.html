@@ -1,0 +1,80 @@
+<!-- back/auth/logout.html -->
+{% extends "back/base.html" %}
+{% load static %}
+
+{% block custom_css %}
+<style>
+    .logout-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .logout-card {
+        background: white;
+        border-radius: 15px;
+        padding: 40px;
+        text-align: center;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        max-width: 400px;
+        width: 100%;
+    }
+    
+    .logout-icon {
+        font-size: 64px;
+        color: #667eea;
+        margin-bottom: 20px;
+    }
+    
+    .btn-login {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        padding: 12px 30px;
+        border-radius: 25px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-login:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+</style>
+{% endblock custom_css %}
+
+{% block content %}
+<div class="logout-container">
+    <div class="logout-card">
+        <div class="logout-icon">
+            <i class="mdi mdi-check-circle-outline"></i>
+        </div>
+        
+        <h2 class="mb-3">Successfully Logged Out</h2>
+        
+        <p class="text-muted mb-4">
+            You have been successfully logged out of your account.
+            Thank you for using our platform.
+        </p>
+        
+        <div class="d-grid gap-2">
+            <a href="{% url 'backend_login' %}" class="btn btn-login">
+                <i class="mdi mdi-login"></i> Sign In Again
+            </a>
+            
+            <a href="{% url 'home' %}" class="btn btn-outline-primary">
+                <i class="mdi mdi-home"></i> Go to Homepage
+            </a>
+        </div>
+        
+        <div class="mt-4 pt-3 border-top">
+            <p class="text-muted small mb-0">
+                &copy; {% now "Y" %} Your Company. All rights reserved.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock content %}

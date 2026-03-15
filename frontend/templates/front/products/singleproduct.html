@@ -1,0 +1,383 @@
+{% extends "front/base.html" %}
+
+{% load static %}
+
+{% block custom_css %}
+
+<!-- Shop page specific CSS -->
+<link rel="stylesheet" href="{% static 'assets/css/backgrounds/bg-4.css' %}">
+
+<style>
+    .ec-ratting-star .ecicon {
+        font-size: 24px;
+        color: #ccc; /* Gray by default */
+        cursor: pointer;
+        transition: color 0.3s;
+    }
+    .ec-ratting-star .ecicon.fill {
+        color: #ffcc00; /* Gold/Yellow for selected stars */
+    }
+</style>
+
+{% endblock custom_css %}
+
+{% block content %}
+   <!-- Ec breadcrumb start -->
+   <div class="sticky-header-next-sec  ec-breadcrumb section-space-mb">
+       <div class="container">
+           <div class="row">
+               <div class="col-12">
+                   <div class="row ec_breadcrumb_inner">
+                       <div class="col-md-6 col-sm-12">
+                           <h2 class="ec-breadcrumb-title">{{ product.title }}</h2>
+                       </div>
+                       <div class="col-md-6 col-sm-12">
+                           <!-- ec-breadcrumb-list start -->
+                           <ul class="ec-breadcrumb-list">
+                               <li class="ec-breadcrumb-item"><a href="index.html">Home</a></li>
+                               <li class="ec-breadcrumb-item active">Products</li>
+                           </ul>
+                           <!-- ec-breadcrumb-list end -->
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </div>
+   <!-- Ec breadcrumb end -->
+
+   <!-- Sart Single product -->
+   <section class="ec-page-content section-space-p">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 col-md-12">
+                <div class="single-pro-block">
+                    <div class="single-pro-inner">
+                        <div class="row">
+                            <div class="single-pro-img">
+                                <div class="single-product-scroll">
+                                    
+                                    <div class="single-product-cover">
+                                        {% if product.thumbnail_image %}
+                                        <div class="single-slide zoom-image-hover">
+                                            <img class="img-responsive" src="{{ product.thumbnail_image.url }}" alt="{{ product.title }}">
+                                        </div>
+                                        {% endif %}
+                                        
+                                        {% for img_obj in product.images.all %}
+                                        <div class="single-slide zoom-image-hover">
+                                            <img class="img-responsive" src="{{ img_obj.image.url }}" alt="{{ img_obj.alt_text|default:product.title }}">
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    
+                                    <div class="single-nav-thumb">
+                                        {% if product.thumbnail_image %}
+                                        <div class="single-slide">
+                                            <img class="img-responsive" src="{{ product.thumbnail_image.url }}" alt="{{ product.title }}">
+                                        </div>
+                                        {% endif %}
+                                        
+                                        {% for img_obj in product.images.all %}
+                                        <div class="single-slide">
+                                            <img class="img-responsive" src="{{ img_obj.image.url }}" alt="{{ img_obj.alt_text|default:product.title }}">
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="single-pro-desc">
+                                <div class="single-pro-content">
+                                    <h5 class="ec-single-title">{{ product.title }}</h5>
+                                    <div class="ec-single-rating-wrap">
+                                        <div class="ec-single-rating">
+                                            {% for i in "12345"|make_list %}
+                                                {% if forloop.counter <= int_avg_rating %}
+                                                    <i class="ecicon eci-star fill"></i>
+                                                {% else %}
+                                                    <i class="ecicon eci-star-o"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                        
+                                        <span class="ec-read-review">
+                                            <a href="#ec-spt-nav-review">
+                                                {% if review_count > 0 %}
+                                                    {{ review_count }} Reviews ({{ avg_rating }}/5)
+                                                {% else %}
+                                                    Be the first to review this product
+                                                {% endif %}
+                                            </a>
+                                        </span>
+                                    </div>
+
+                                    <div class="ec-single-desc">
+                                        {{ product.short_description|safe|default:"No description available." }}
+                                    </div>
+
+                                    <div class="ec-single-sales">
+                                        <div class="ec-single-sales-inner">
+                                            <div class="ec-single-sales-title">sales accelerators</div>
+                                            <div class="ec-single-sales-visitor">real time <span>24</span> visitor right now!</div>
+                                            
+                                            <div class="ec-single-sales-progress">
+                                                <span class="ec-single-progress-desc">
+                                                    Hurry up! left {{ product.stock_quantity }} in stock
+                                                </span>
+                                                <span class="ec-single-progressbar" style="width: 50%;"></span>
+                                            </div>
+                                            
+                                            <div class="ec-single-sales-countdown">
+                                                <div class="ec-single-countdown"><span id="ec-single-countdown"></span></div>
+                                                <div class="ec-single-count-desc">Time is Running Out!</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="ec-single-price-stoke">
+                                        <div class="ec-single-price">
+                                            <span class="ec-single-ps-title">As low as</span>
+                                            
+                                            {% if product.current_discount %}
+                                                <span class="new-price">৳{{ product.get_discounted_price }}</span>
+                                                
+                                                <span class="old-price" style="text-decoration: line-through; color: #777; margin-left: 10px; font-size: 0.9em;">
+                                                    ৳{{ product.selling_price }}
+                                                </span>
+                                                
+                                                <span class="discount-percentage" style="color: #ff0000; font-weight: 600; margin-left: 5px; font-size: 0.8em;">
+                                                    (-{{ product.discount_percentage }}%)
+                                                </span>
+                                                
+                                                <div style="font-size: 13px; color: #28a745; margin-top: 5px;">
+                                                    You save: ৳{{ product.discount_savings }}
+                                                </div>
+                                            {% else %}
+                                                <span class="new-price">৳{{ product.selling_price }}</span>
+                                            {% endif %}
+                                        </div>
+                                    
+                                        <div class="ec-single-stoke">
+                                            <span class="ec-single-ps-title">AVAILABILITY: 
+                                                <span style="color: {% if product.stock_quantity > 0 %}#4caf50{% else %}#ff0000{% endif %}; font-weight: bold;">
+                                                    {{ product.get_stock_status_display }}
+                                                </span>
+                                            </span>
+                                            <span class="ec-single-ps-title">SKU: <strong>{{ product.sku }}</strong></span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="ec-single-qty">
+                                        <form action="{% url 'add_to_cart' product.id %}" method="POST" style="display: flex; align-items: center;">
+                                            {% csrf_token %}
+                                            
+                                            <div class="qty-plus-minus">
+                                                <input class="qty-input" type="text" name="qty" value="1" />
+                                            </div>
+                                            
+                                            <div class="ec-single-cart">
+                                                <button type="submit" class="btn btn-primary">Add To Cart</button>
+                                            </div>
+                                        </form>
+                                        <div class="ec-single-quickview">
+                                            <a href="#" class="ec-btn-group quickview" data-bs-toggle="modal" data-bs-target="#ec_quickview_modal_{{ product.id }}">
+                                                <i class="fi-rr-eye"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <div class="ec-single-social">
+                                        <ul class="mb-0">
+                                            <li class="list-inline-item facebook"><a href="#"><i class="ecicon eci-facebook"></i></a></li>
+                                            <li class="list-inline-item instagram"><a href="#"><i class="ecicon eci-instagram"></i></a></li>
+                                            <li class="list-inline-item whatsapp"><a href="#"><i class="ecicon eci-whatsapp"></i></a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="ec-single-pro-tab">
+                    <div class="ec-single-pro-tab-wrapper">
+                        <div class="ec-single-pro-tab-nav">
+                            <ul class="nav nav-tabs" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" data-bs-toggle="tab"
+                                        data-bs-target="#ec-spt-nav-details" role="tab" aria-controls="ec-spt-nav-details" aria-selected="true">Detail</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-bs-toggle="tab" data-bs-target="#ec-spt-nav-info"
+                                        role="tab" aria-controls="ec-spt-nav-info" aria-selected="false">More Information</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-bs-toggle="tab" data-bs-target="#ec-spt-nav-review"
+                                        role="tab" aria-controls="ec-spt-nav-review" aria-selected="false">Reviews</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="tab-content ec-single-pro-tab-content">
+                            <div id="ec-spt-nav-details" class="tab-pane fade show active">
+                                <div class="ec-single-pro-tab-desc">
+                                    {{ product.description|safe }}
+                                </div>
+                            </div>
+
+                            <div id="ec-spt-nav-info" class="tab-pane fade">
+                                <div class="ec-single-pro-tab-moreinfo">
+                                    {{ product.specification|safe|default:"No specifications available." }}
+                                </div>
+                            </div>
+
+                            <div id="ec-spt-nav-review" class="tab-pane fade">
+                                <div class="row">
+                                    <div class="ec-t-review-wrapper">
+                                        
+                                        {% for review in reviews %}
+                                        <div class="ec-t-review-item">
+                                            <div class="ec-t-review-avtar">
+                                                <img src="{% static 'assets/images/review-image/1.jpg' %}" alt="" />
+                                            </div>
+                                            <div class="ec-t-review-content">
+                                                <div class="ec-t-review-top">
+                                                    <div class="ec-t-review-name">{{ review.name }}</div>
+                                                    <div class="ec-t-review-rating">
+                                                        {% for i in "12345"|make_list %}
+                                                            <i class="ecicon eci-star {% if forloop.counter <= review.rating %}fill{% else %}eci-star-o{% endif %}"></i>
+                                                        {% endfor %}
+                                                    </div>
+                                                </div>
+                                                <div class="ec-t-review-bottom">
+                                                    <p>{{ review.review }}</p>
+                                                    <small>{{ review.created_at|date:"M d, Y" }}</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% empty %}
+                                        <p>No reviews yet. Write a review!</p>
+                                        {% endfor %}
+                                        
+                                    </div>
+                                </div>
+                            
+                                <div class="ec-ratting-content">
+                                    <h3>Add a Review</h3>
+                                    <div class="ec-ratting-form">
+                                        <form action="{% url 'submit_review' product.id %}" method="POST">
+                                            {% csrf_token %}
+                                
+                                            <div class="ec-ratting-star">
+                                                <span>Your rating:</span>
+                                                <div class="ec-t-review-rating">
+                                                    <i class="ecicon eci-star-o star-rating-icon" data-value="1"></i>
+                                                    <i class="ecicon eci-star-o star-rating-icon" data-value="2"></i>
+                                                    <i class="ecicon eci-star-o star-rating-icon" data-value="3"></i>
+                                                    <i class="ecicon eci-star-o star-rating-icon" data-value="4"></i>
+                                                    <i class="ecicon eci-star-o star-rating-icon" data-value="5"></i>
+                                                </div>
+                                                <input type="hidden" name="rating" id="rating_value" value="5">
+                                            </div>
+                                
+                                            <div class="ec-ratting-input">
+                                                <input name="name" placeholder="Name *" type="text" required />
+                                            </div>
+                                            <div class="ec-ratting-input">
+                                                <input name="email" placeholder="Email *" type="email" required />
+                                            </div>
+                                            <div class="ec-ratting-input">
+                                                <input name="number" 
+                                                       placeholder="Phone Number (01XXXXXXXXX) *" 
+                                                       type="text" 
+                                                       pattern="01[3-9][0-9]{8}" 
+                                                       title="Please enter a valid BD phone number (e.g. 01712345678)"
+                                                       required />
+                                            </div>
+                                            
+                                            <div class="ec-ratting-input form-submit">
+                                                <textarea name="review" placeholder="Enter Your Comment *" required></textarea>
+                                                <button class="btn btn-primary" type="submit">Submit Review</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+   <!-- End Single product -->
+
+   {% endblock content %}
+
+   {% block custom_js %}
+    <script src="{% static 'assets/js/plugins/slick.min.js' %}"></script>
+    
+    <script src="{% static 'assets/js/plugins/jquery.zoom.min.js' %}"></script>
+    
+    <script src="{% static 'assets/js/vendor/jquery.magnific-popup.min.js' %}"></script>
+    
+    <script>
+        $(document).ready(function() {
+            // Re-trigger slick if needed (sometimes needed in Django blocks)
+            $('.single-product-cover').slick({
+                slidesToShow: 1,
+                slidesToScroll: 1,
+                arrows: false,
+                fade: false,
+                asNavFor: '.single-nav-thumb',
+            });
+
+            $('.single-nav-thumb').slick({
+                slidesToShow: 4,
+                slidesToScroll: 1,
+                asNavFor: '.single-product-cover',
+                dots: false,
+                arrows: true,
+                focusOnSelect: true,
+                centerMode: false,
+                responsive: [
+                    {
+                        breakpoint: 768,
+                        settings: {
+                            slidesToShow: 3,
+                        }
+                    }
+                ]
+            });
+            
+            // Re-trigger Zoom
+            $('.zoom-image-hover').zoom();
+        });
+    </script>
+    <script>
+        $(document).ready(function() {
+            
+            // 1. Set default state (5 stars filled)
+            updateStars(5);
+    
+            // 2. Handle Click Event
+            $('.star-rating-icon').on('click', function() {
+                var ratingValue = $(this).data('value'); // Get the value (1, 2, etc.)
+                $('#rating_value').val(ratingValue);     // Update the hidden input for the backend
+                updateStars(ratingValue);                // Update the visual stars
+            });
+    
+            // Helper function to color the stars
+            function updateStars(value) {
+                $('.star-rating-icon').each(function() {
+                    var starValue = $(this).data('value');
+                    if (starValue <= value) {
+                        // This star should be filled
+                        $(this).removeClass('eci-star-o').addClass('eci-star fill');
+                    } else {
+                        // This star should be empty
+                        $(this).removeClass('eci-star fill').addClass('eci-star-o');
+                    }
+                });
+            }
+        });
+    </script>
+{% endblock custom_js %}

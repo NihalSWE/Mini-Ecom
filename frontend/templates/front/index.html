@@ -1,0 +1,262 @@
+{% extends "front/base.html" %}
+
+{% load static %}
+
+{% block custom_css %}
+<link rel="stylesheet" href="{% static 'assets/css/demo7.css'%}" />
+<style>
+@media (min-width: 992px) {
+    .col-lg-5-items {
+        flex: 0 0 auto;
+        width: 20%;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .ec-main-slider .ec-slide-item {
+        height: 42vh !important;
+        min-height: 320px;
+    }
+
+    .ec-main-slider .ec-slide-title {
+        font-size: 32px;
+        line-height: 1.15;
+    }
+
+    .ec-main-slider .ec-slide-desc p {
+        font-size: 14px;
+    }
+
+    .ec-pro-tab-nav {
+        justify-content: center !important;
+        gap: 8px;
+    }
+
+    .ec-pro-tab-nav .nav-item {
+        margin-bottom: 8px;
+    }
+}
+</style>
+
+{% endblock custom_css %}
+
+{% block content %}
+
+
+
+  <!--  category Section Start -->
+  <section class="section ec-category-section section-space-p">
+    <div class="container">
+        <div class="row margin-minus-b-15 margin-minus-t-15" data-animation="fadeIn">
+            <div id="ec-cat-slider">
+                {% for category in categories %}
+                <div class="ec_cat_content ec_cat_content_{{ forloop.counter }} col-sm-12 col-md-6 col-lg-3">
+                    <div class="ec_cat_inner ec_cat_inner-{{ forloop.counter }}">
+                        <div class="ec-category-image">
+                            <a href="{% url 'allProducts' %}?category={{ category.slug }}">
+                            {% if category.image %}
+                                <img src="{{ category.image.url }}" class="svg_img" alt="{{ category.name }}" />
+                            {% else %}
+                                <img src="{% static 'assets/images/icons/drink-6.png' %}" class="svg_img" alt="{{ category.name }}" />
+                            {% endif %}
+                            </a>
+                        </div>
+                        <div class="ec-category-desc">
+                            <h3>
+                                <a href="{% url 'allProducts' %}?category={{ category.slug }}">{{ category.name }}</a>
+                                <span title="Category Items">({{ category.product_count }})</span>
+                            </h3>
+                            
+                            <a href="{% url 'allProducts' %}?category={{ category.slug }}" class="cat-show-all">
+                                Show All <i class="ecicon eci-angle-double-right" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center py-5">
+                    <p class="text-muted">No categories found.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+<!--category Section End -->
+
+<!-- Main Slider Start -->
+<div class="ec-main-slider section section-space-pb-30">
+    <div class="container">
+        <div class="ec-slider swiper-container main-slider-nav main-slider-dot">
+        <!-- Main slider -->
+        <div class="swiper-wrapper">
+            {% for slider in sliders %}
+            <div class="ec-slide-item swiper-slide d-flex slide-{{ forloop.counter }}"
+                 style="background-image: url('{{ slider.image.url }}'); 
+                        background-position: center;
+                        background-repeat: no-repeat;
+                        background-size: cover;
+                        height: 60vh;">
+                <div class="container align-self-center">
+                    <div class="row">
+                        <div class="col-sm-12 align-self-center">
+                            <div class="ec-slide-content slider-animation">
+                                {% if slider.subtitle %}
+                                <h2 class="ec-slide-stitle">{{ slider.subtitle }}</h2>
+                                {% endif %}
+                                <h1 class="ec-slide-title">{{ slider.title }}</h1>
+                                <div class="ec-slide-desc">
+                                    {% if slider.price %}
+                                    <p>{{ slider.price_text|default:"starting at $" }} <b>{{ slider.price }}</b></p>
+                                    {% endif %}
+                                    <a href="{{ slider.button_link }}" class="btn btn-lg btn-primary">
+                                        {{ slider.button_text }} 
+                                        <i class="ecicon eci-angle-double-right" aria-hidden="true"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <!-- Fallback to static content if no sliders exist -->
+            <div class="ec-slide-item swiper-slide d-flex slide-1"
+                 style="background-image: url('../images/main-slider-banner/18.jpg'); 
+                        background-position: center;
+                        background-repeat: no-repeat;
+                        background-size: cover;
+                        height: 60vh;">
+                <div class="container align-self-center">
+                    <div class="row">
+                        <div class="col-sm-12 align-self-center">
+                            <div class="ec-slide-content slider-animation">
+                                <h2 class="ec-slide-stitle">fresh & healthy</h2>
+                                <h1 class="ec-slide-title">Organic Fruits</h1>
+                                <div class="ec-slide-desc">
+                                    <p>starting at $ <b>29</b>.99</p>
+                                    <a href="#" class="btn btn-lg btn-primary">Shop Now <i
+                                            class="ecicon eci-angle-double-right" aria-hidden="true"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="swiper-pagination swiper-pagination-white"></div>
+        <div class="swiper-buttons">
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+        </div>
+        </div>
+    </div>
+</div>  
+<!-- Main Slider End -->
+
+<!-- Product tab Area Start -->
+<section class="section ec-product-tab section-space-p">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 col-md-12">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="section-title">
+                            <h2 class="ec-title" id="collectionTitle">Our New Collection</h2>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12 ec-pro-tab">
+                        <ul class="ec-pro-tab-nav nav justify-content-end">
+                            <li class="nav-item">
+                                <a class="nav-link active" data-bs-toggle="tab" href="#tab-new">New Arrivals</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-bs-toggle="tab" href="#tab-featured">Featured</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-bs-toggle="tab" href="#tab-best">Best Sellers</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-bs-toggle="tab" href="#tab-trend">Trending</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="row margin-minus-b-15">
+                    <div class="col">
+                        <div class="tab-content">
+                            
+                            <div class="tab-pane fade show active" id="tab-new">
+                                <div class="row">
+                                    {% for product in new_products %}
+                                        {% include "front/includes/product_card_loop.html" with product=product %}
+                                    {% empty %}
+                                        <div class="col-12 text-center">No new products found.</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="tab-featured">
+                                <div class="row">
+                                    {% for product in featured_products %}
+                                        {% include "front/includes/product_card_loop.html" with product=product %}
+                                    {% empty %}
+                                        <div class="col-12 text-center">No featured products found.</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="tab-best">
+                                <div class="row">
+                                    {% for product in best_sellers %}
+                                        {% include "front/includes/product_card_loop.html" with product=product %}
+                                    {% empty %}
+                                        <div class="col-12 text-center">No best sellers found.</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="tab-trend">
+                                <div class="row">
+                                    {% for product in trending_products %}
+                                        {% include "front/includes/product_card_loop.html" with product=product %}
+                                    {% empty %}
+                                        <div class="col-12 text-center">No trending products found.</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- ec Product tab Area End -->
+ 
+{% endblock content %}
+
+{% block custom_js %}
+    {{ block.super }}
+    <script src="{% static 'assets/js/demo-7.js'%}"></script>
+    <script>
+        $(document).ready(function () {
+            const $collectionTitle = $('#collectionTitle');
+            const collectionTitles = {
+                '#tab-new': 'Our New Collection',
+                '#tab-featured': 'Our Featured Collection',
+                '#tab-best': 'Our Best Seller Collection',
+                '#tab-trend': 'Our Trending Collection'
+            };
+
+            $('.ec-pro-tab-nav .nav-link').on('shown.bs.tab', function () {
+                const target = $(this).attr('href');
+                $collectionTitle.text(collectionTitles[target] || 'Our Collection');
+            });
+        });
+    </script>
+{% endblock custom_js %}

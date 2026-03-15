@@ -1,0 +1,302 @@
+{% extends "front/base.html" %}
+{% load static %}
+
+{% block custom_css %}
+<link rel="stylesheet" href="{% static 'assets/css/plugins/nouislider.css' %}">
+<link rel="stylesheet" href="{% static 'assets/css/backgrounds/bg-4.css' %}">
+<style>
+    .noUi-target {
+        height: 6px !important;
+        border: none !important;
+        box-shadow: none !important;
+        background: #e9ecef !important;
+        border-radius: 3px !important;
+    }
+
+    .noUi-connect {
+        background: #5caf90 !important;
+    }
+
+    .noUi-handle {
+        width: 14px !important;
+        height: 14px !important;
+        border-radius: 50% !important;
+        background: #5caf90 !important;
+        border: 2px solid #fff !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+        top: -5px !important;
+        right: -7px !important;
+    }
+
+    .noUi-handle::before,
+    .noUi-handle::after {
+        display: none !important;
+    }
+
+    .ec-sidebar-block-item.ec-category-option {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .ec-sidebar-block-item.ec-category-option a {
+        flex: 1 1 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-width: 0;
+    }
+
+    .ec-sidebar-block-item.ec-category-option a span:first-child {
+        padding-right: 8px;
+    }
+
+    .ec-sidebar-block-item.ec-category-option input[type="checkbox"] {
+        margin: 0;
+        flex: 0 0 auto;
+    }
+
+    .ec-sidebar-block-item.ec-category-option .checked {
+        flex: 0 0 auto;
+        margin-left: 0;
+    }
+
+    .ec-catalog-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+        width: 100%;
+    }
+
+    .ec-catalog-toolbar form {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0;
+    }
+
+    #catalogLimitForm {
+        margin-right: auto;
+    }
+
+    .ec-filter-actions {
+        margin-top: 15px;
+    }
+
+    @media (max-width: 767.98px) {
+        .ec-catalog-toolbar,
+        .ec-catalog-toolbar form {
+            flex-direction: column;
+            align-items: stretch;
+            width: 100%;
+        }
+
+        #catalogLimitForm {
+            margin-right: 0;
+        }
+
+        .ec-catalog-toolbar .ec-select-inner,
+        .ec-catalog-toolbar select {
+            width: 100%;
+        }
+
+        .ec-shop-rightside,
+        .ec-shop-leftside {
+            padding-left: 12px;
+            padding-right: 12px;
+        }
+    }
+</style>
+{% endblock custom_css %}
+
+{% block content %}
+<div class="sticky-header-next-sec ec-breadcrumb section-space-mb">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="row ec_breadcrumb_inner">
+                    <div class="col-md-6 col-sm-12">
+                        <h2 class="ec-breadcrumb-title" id="catalogPageTitle">{{ page_title }}</h2>
+                    </div>
+                    <div class="col-md-6 col-sm-12">
+                        <ul class="ec-breadcrumb-list">
+                            <li class="ec-breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                            <li class="ec-breadcrumb-item active" id="catalogBreadcrumbTitle">{{ page_title }}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="ec-page-content section-space-p">
+    <div class="container">
+        <div class="row">
+            <div class="ec-shop-rightside col-lg-9 col-md-12 order-lg-last order-md-first margin-b-30">
+                {% include "front/products/_catalog_toolbar.html" %}
+
+                {% include "front/products/_catalog_results.html" %}
+            </div>
+
+            <div class="ec-shop-leftside col-lg-3 col-md-12 order-lg-first order-md-last">
+                <div id="shop_sidebar">
+                    <div class="inner-wrapper-sticky">
+                        <div class="ec-sidebar-heading">
+                            <h1>Filter Products By</h1>
+                        </div>
+                        <div class="ec-sidebar-wrap">
+                            <div class="ec-sidebar-block">
+                                <div class="ec-sb-title">
+                                    <h3 class="ec-sidebar-title">Category<div class="ec-sidebar-res"><i class="ecicon eci-angle-down"></i></div></h3>
+                                </div>
+                                {% include "front/products/_category_filter.html" %}
+                            </div>
+
+                            <div class="ec-sidebar-block">
+                                <div class="ec-sb-title">
+                                    <h3 class="ec-sidebar-title">Price<div class="ec-sidebar-res"><i class="ecicon eci-angle-down"></i></div></h3>
+                                </div>
+                                {% include "front/products/_price_filter.html" %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}
+
+{% block custom_js %}
+<script src="{% static 'assets/js/vendor/jquery.magnific-popup.min.js' %}"></script>
+<script src="{% static 'assets/js/plugins/jquery.sticky-sidebar.js' %}"></script>
+<script src="{% static 'assets/js/plugins/nouislider.js' %}"></script>
+<script>
+    $(document).ready(function () {
+        let priceFilterTimer = null;
+
+        function updateCatalog(url) {
+            $.ajax({
+                url: url,
+                type: 'GET',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                success: function (response) {
+                    if (!response.success) {
+                        return;
+                    }
+
+                    $('#catalogToolbar').replaceWith(response.toolbar_html);
+                    $('#catalogResults').replaceWith(response.results_html);
+                    $('#categoryFilterBlock').replaceWith(response.category_html);
+                    $('#priceFilterBlock').replaceWith(response.price_html);
+                    $('#catalogPageTitle').text(response.page_title);
+                    $('#catalogBreadcrumbTitle').text(response.page_title);
+                    window.history.replaceState({}, '', url);
+                    initCatalogUi();
+                }
+            });
+        }
+
+        function serializeCatalogForm($form) {
+            const url = new URL(window.location.href);
+            const params = new URLSearchParams($form.serialize());
+            return url.pathname + '?' + params.toString();
+        }
+
+        function initPriceSlider() {
+            const slider = document.getElementById('ec-sliderPrice');
+            if (!slider) {
+                return;
+            }
+
+            const minValue = parseInt(slider.dataset.min || 0, 10);
+            const maxValue = parseInt(slider.dataset.max || 0, 10);
+            const startMin = parseInt(slider.dataset.startMin || minValue, 10);
+            const startMax = parseInt(slider.dataset.startMax || maxValue, 10);
+
+            if (maxValue <= minValue) {
+                return;
+            }
+
+            noUiSlider.create(slider, {
+                start: [startMin, startMax],
+                connect: true,
+                step: parseInt(slider.dataset.step || 1, 10),
+                range: {
+                    min: minValue,
+                    max: maxValue
+                }
+            });
+
+            const inputs = document.querySelectorAll('#priceFilterForm .filter__input');
+
+            slider.noUiSlider.on('update', function (values, handle) {
+                inputs[handle].value = Math.round(values[handle]);
+            });
+
+            slider.noUiSlider.on('change', function () {
+                clearTimeout(priceFilterTimer);
+                priceFilterTimer = setTimeout(function () {
+                    updateCatalog(serializeCatalogForm($('#priceFilterForm')));
+                }, 150);
+            });
+
+            inputs.forEach(function (input, index) {
+                input.addEventListener('change', function () {
+                    const numericValue = this.value.replace(/[^0-9]/g, '');
+                    slider.noUiSlider.setHandle(index, numericValue || 0);
+                    clearTimeout(priceFilterTimer);
+                    priceFilterTimer = setTimeout(function () {
+                        updateCatalog(serializeCatalogForm($('#priceFilterForm')));
+                    }, 150);
+                });
+            });
+        }
+
+        function initCatalogUi() {
+            initPriceSlider();
+        }
+
+        $(document).on('change', '#catalogSortSelect', function () {
+            updateCatalog(serializeCatalogForm($('#catalogSortForm')));
+        });
+
+        $(document).on('change', '#catalogPerPageSelect', function () {
+            updateCatalog(serializeCatalogForm($('#catalogLimitForm')));
+        });
+
+        $(document).on('click', '.js-category-filter-link', function (e) {
+            e.preventDefault();
+            updateCatalog($(this).attr('href'));
+        });
+
+        $(document).on('change', '.js-category-filter-toggle', function () {
+            updateCatalog($(this).data('url'));
+        });
+
+        $(document).on('click', '.js-catalog-page-link', function (e) {
+            e.preventDefault();
+            updateCatalog($(this).attr('href'));
+        });
+
+        $(document).on('click', '#priceFilterReset', function (e) {
+            e.preventDefault();
+            updateCatalog($(this).attr('href'));
+        });
+
+        if ($('.ec-sidebar-wrap').length) {
+            new StickySidebar('#shop_sidebar', {
+                topSpacing: 20,
+                bottomSpacing: 20,
+                containerSelector: '.ec-page-content',
+                innerWrapperSelector: '.inner-wrapper-sticky'
+            });
+        }
+
+        initCatalogUi();
+    });
+</script>
+{% endblock custom_js %}

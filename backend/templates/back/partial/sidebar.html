@@ -1,0 +1,202 @@
+{% load static %}
+<div class="ec-left-sidebar ec-bg-sidebar">
+    <div id="sidebar" class="sidebar ec-sidebar-footer">
+
+        <div class="ec-brand">
+            <a href="{% url 'dashboard' %}" title="{{ site_branding.site_name|default:'Ekka' }}">
+                <img class="ec-brand-icon" style="max-width: 200px; vertical-align: middle;" src="{% if site_branding.logo %}{{ site_branding.logo.url }}{% else %}{% static 'assets/img/logo/ec-site-logo.png' %}{% endif %}" alt="{{ site_branding.site_name|default:'Ekka' }}" />
+                
+            </a>
+        </div>
+
+        <!-- begin sidebar scrollbar -->
+        <div class="ec-navigation" data-simplebar>
+            <!-- sidebar menu -->
+            <ul class="nav sidebar-inner" id="sidebar-menu">
+                <!-- Dashboard -->
+                <li class="active">
+                    <a class="sidenav-item-link" href="{% url 'dashboard' %}">
+                        <i class="mdi mdi-view-dashboard-outline"></i>
+                        <span class="nav-text">Dashboard</span>
+                    </a>
+                    <hr>
+                </li>
+                <!-- Home -->
+                <li class="has-sub">
+                    <a class="sidenav-item-link" href="javascript:void(0)">
+                        <i class="mdi mdi-home"></i>
+                        <span class="nav-text">Home</span> <b class="caret"></b>
+                    </a>
+                    <div class="collapse">
+                        <ul class="sub-menu" id="home" data-parent="#sidebar-menu">
+                            <li class="">
+                                <a class="sidenav-item-link" href="{% url 'add_banner' %}">
+                                    <span class="nav-text">Add Banner</span>
+                                </a>
+                            </li>
+                            <li class="">
+                                <a class="sidenav-item-link" href="{% url 'banner_list' %}">
+                                    <span class="nav-text">Banner List</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <hr>
+                </li>
+                <li class="has-sub">
+                    <a class="sidenav-item-link" href="javascript:void(0)">
+                        <i class="mdi mdi-web"></i>
+                        <span class="nav-text">Website Content</span> <b class="caret"></b>
+                    </a>
+                    <div class="collapse">
+                        <ul class="sub-menu" id="website-content" data-parent="#sidebar-menu">
+                            <li>
+                                <a class="sidenav-item-link" href="{% url 'site_branding_settings' %}">
+                                    <span class="nav-text">Site Branding</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidenav-item-link" href="{% url 'about_page_settings' %}">
+                                    <span class="nav-text">About Us Page</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidenav-item-link" href="{% url 'contact_page_settings' %}">
+                                    <span class="nav-text">Contact Us Page</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidenav-item-link" href="{% url 'contact_message_list' %}">
+                                    <span class="nav-text">Contact Messages</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <hr>
+                </li>
+                <!-- Vendors -->
+                <li class="has-sub">
+                    <a class="sidenav-item-link" href="javascript:void(0)">
+                        <i class="mdi mdi-account-group"></i>
+                        <span class="nav-text">Users</span> <b class="caret"></b>
+                    </a>
+                    <div class="collapse">
+                        <ul class="sub-menu" id="users" data-parent="#sidebar-menu">
+                            <li class="">
+                                <a class="sidenav-item-link" href="{% url 'add_user' %}">
+                                    <span class="nav-text">Add User</span>
+                                </a>
+                            </li>
+                            <li class="">
+                                <a class="sidenav-item-link" href="{% url 'user_profile' %}">
+                                    <span class="nav-text">Users Profile</span>
+                                </a>
+                            </li>
+
+                            <li class="">
+                                <a class="sidenav-item-link" href="{% url 'user_list' %}">
+                                    <span class="nav-text">User List</span>
+                                </a>
+                            </li>
+                            
+                        </ul>
+                    </div>
+                    <hr>
+                </li>
+
+                <!-- Category -->
+                <li class="has-sub">
+                    <a class="sidenav-item-link" href="javascript:void(0)">
+                        <i class="mdi mdi-dns-outline"></i>
+                        <span class="nav-text">Categories</span> <b class="caret"></b>
+                    </a>
+                    <div class="collapse">
+                        <ul class="sub-menu" id="categorys" data-parent="#sidebar-menu">
+                            <li class="">
+                                <a class="sidenav-item-link" href="{% url 'category' %}">
+                                    <span class="nav-text">Main Category</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+
+                <!-- Products -->
+                <li class="has-sub">
+                    <a class="sidenav-item-link" href="javascript:void(0)">
+                        <i class="mdi mdi-palette-advanced"></i>
+                        <span class="nav-text">Products</span> <b class="caret"></b>
+                    </a>
+                    <div class="collapse">
+                        <ul class="sub-menu" id="products" data-parent="#sidebar-menu">
+                            <li class="">
+                                <a class="sidenav-item-link" href="{% url 'add_product' %}">
+                                    <span class="nav-text">Add Product</span>
+                                </a>
+                            </li>
+                            <li class="">
+                                <a class="sidenav-item-link" href="{% url 'product_list' %}">
+                                    <span class="nav-text">List Product</span>
+                                </a>
+                            </li>
+                            <li class="">
+                                <a class="sidenav-item-link" href="{% url 'review' %}">
+                                    <span class="nav-text">Product Review</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+
+                <!-- Delivery Charge -->
+                <li class="has-sub">
+                    <a class="sidenav-item-link" href="javascript:void(0)">
+                        <i class="mdi mdi-truck-delivery"></i>
+                        <span class="nav-text">Delivery Charge</span> <b class="caret"></b>
+                    </a>
+                    <div class="collapse">
+                        <ul class="sub-menu" id="delivery-charge" data-parent="#sidebar-menu">
+                            <li>
+                                <a class="sidenav-item-link" href="{% url 'delivery_charge_list' %}">
+                                    <span class="nav-text">Charge</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+
+
+                                <!-- Orders -->
+                <li class="has-sub">
+                    <a class="sidenav-item-link" href="javascript:void(0)">
+                        <i class="mdi mdi-cart"></i>
+                        <span class="nav-text">Orders</span> <b class="caret"></b>
+                    </a>
+                    <div class="collapse">
+                        <ul class="sub-menu" id="orders" data-parent="#sidebar-menu">
+                            <li class="">
+                                <a class="sidenav-item-link" href="{% url 'order_list' %}">
+                                    <span class="nav-text">All Orders</span>
+                                </a>
+                            </li>
+                            {% comment %} <li class="">
+                                <a class="sidenav-item-link" href="{% url 'invoice' %}">
+                                    <span class="nav-text">Invoice</span>
+                                </a>
+                            </li> {% endcomment %}
+                        </ul>
+                    </div>
+                </li>
+
+                <!-- Reviews -->
+                <li>
+                    <a class="sidenav-item-link" href="{% url 'review' %}">
+                        <i class="mdi mdi-star-half"></i>
+                        <span class="nav-text">Reviews</span>
+                    </a>
+                </li>
+                <hr>
+            </ul>
+        </div>
+    </div>
+</div>

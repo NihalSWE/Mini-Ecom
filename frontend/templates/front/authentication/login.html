@@ -1,0 +1,61 @@
+{% extends "front/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="sticky-header-next-sec ec-breadcrumb section-space-mb">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="row ec_breadcrumb_inner">
+                    <div class="col-md-6 col-sm-12">
+                        <h2 class="ec-breadcrumb-title">Login</h2>
+                    </div>
+                    <div class="col-md-6 col-sm-12">
+                        <ul class="ec-breadcrumb-list">
+                            <li class="ec-breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                            <li class="ec-breadcrumb-item active">Login</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="ec-page-content section-space-p">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="ec-login-wrapper">
+                    <div class="ec-login-container">
+                        <div class="ec-login-form">
+                            {% if messages %}
+                                {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                                {% endfor %}
+                            {% endif %}
+
+                            <form action="{% url 'login' %}" method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="next" value="{{ next }}">
+                                <span class="ec-login-wrap">
+                                    <label>Email Address*</label>
+                                    <input type="email" name="email" value="{{ request.POST.email|default:'' }}" placeholder="Enter your email address" required />
+                                </span>
+                                <span class="ec-login-wrap">
+                                    <label>Password*</label>
+                                    <input type="password" name="password" placeholder="Enter your password" required />
+                                </span>
+                                <span class="ec-login-wrap ec-login-btn">
+                                    <button class="btn btn-primary" type="submit">Login</button>
+                                    <a href="{% url 'register' %}" class="btn btn-secondary">Register</a>
+                                </span>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}

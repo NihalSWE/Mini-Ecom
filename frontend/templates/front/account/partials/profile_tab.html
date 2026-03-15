@@ -1,0 +1,312 @@
+<style>
+    .account-profile-shell {
+        background: #fff;
+        border: 1px solid #e8eef3;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 16px 40px rgba(34, 48, 73, 0.08);
+    }
+
+    .account-profile-top {
+        padding: 28px 30px 22px;
+        background: linear-gradient(180deg, #fafcfd 0%, #f4f8fb 100%);
+        border-bottom: 1px solid #e8eef3;
+    }
+
+    .account-profile-title {
+        margin: 0 0 8px;
+        font-size: 28px;
+        color: #1f2d3d;
+    }
+
+    .account-profile-subtitle {
+        margin: 0;
+        color: #6c7a89;
+        font-size: 15px;
+        line-height: 1.6;
+    }
+
+    .account-profile-body {
+        padding: 30px;
+    }
+
+    .account-profile-card {
+        height: 100%;
+        background: #f9fbfc;
+        border: 1px solid #e8eef3;
+        border-radius: 18px;
+        padding: 28px 24px;
+    }
+
+    .account-profile-avatar {
+        width: 118px;
+        height: 118px;
+        margin: 0 auto 18px;
+        border-radius: 50%;
+        overflow: hidden;
+        background: #edf3f7;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 10px 24px rgba(34, 48, 73, 0.10);
+    }
+
+    .account-profile-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .account-profile-initial {
+        font-size: 40px;
+        font-weight: 700;
+        color: #1f2d3d;
+    }
+
+    .account-profile-name {
+        margin: 0 0 6px;
+        font-size: 22px;
+        color: #1f2d3d;
+        text-align: center;
+    }
+
+    .account-profile-email {
+        margin: 0 0 18px;
+        color: #6c7a89;
+        text-align: center;
+        word-break: break-word;
+    }
+
+    .account-profile-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 22px;
+    }
+
+    .account-profile-meta-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 10px 14px;
+        background: #fff;
+        border: 1px solid #e8eef3;
+        border-radius: 12px;
+        color: #4b5966;
+        font-size: 14px;
+    }
+
+    .account-profile-upload label,
+    .account-profile-form label {
+        display: block;
+        margin-bottom: 8px;
+        color: #1f2d3d;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .account-profile-form .form-control,
+    .account-profile-upload input[type="file"] {
+        border-radius: 12px;
+        border: 1px solid #dbe5ec;
+        background: #fff;
+        min-height: 48px;
+        box-shadow: none;
+        width: 100%;
+    }
+
+    .account-profile-form textarea.form-control {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .account-profile-form .form-control:focus,
+    .account-profile-upload input[type="file"]:focus {
+        border-color: #88b7d8;
+        box-shadow: 0 0 0 4px rgba(76, 132, 173, 0.10);
+    }
+
+    .account-profile-upload input[type="file"] {
+        padding: 6px;
+        font-size: 14px;
+        line-height: 1.2;
+        overflow: hidden;
+    }
+
+    .account-profile-upload input[type="file"]::file-selector-button {
+        margin-right: 12px;
+        border: 0;
+        border-radius: 10px;
+        background: #eef4f8;
+        color: #1f2d3d;
+        padding: 10px 14px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .account-profile-panel {
+        background: #fff;
+        border: 1px solid #e8eef3;
+        border-radius: 18px;
+        padding: 24px;
+    }
+
+    .account-profile-panel-head {
+        margin-bottom: 20px;
+    }
+
+    .account-profile-panel-head h4 {
+        margin: 0 0 6px;
+        color: #1f2d3d;
+        font-size: 22px;
+    }
+
+    .account-profile-panel-head p {
+        margin: 0;
+        color: #6c7a89;
+        font-size: 14px;
+    }
+
+    .account-profile-actions {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid #e8eef3;
+    }
+
+    .account-profile-note {
+        margin: 0;
+        color: #6c7a89;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    .account-profile-btn {
+        min-width: 180px;
+        border-radius: 12px;
+        height: 48px;
+        font-weight: 600;
+    }
+
+    @media (max-width: 991px) {
+        .account-profile-top,
+        .account-profile-body {
+            padding: 22px;
+        }
+
+        .account-profile-actions {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .account-profile-btn {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="account-profile-shell">
+    <div class="account-profile-top">
+        <h3 class="account-profile-title">Profile Details</h3>
+        <p class="account-profile-subtitle">Manage your personal information and keep your account details clean and up to date.</p>
+    </div>
+
+    <div class="account-profile-body">
+        <form action="{% url 'user_dashboard' %}" method="post" enctype="multipart/form-data" class="js-dashboard-form" data-tab="profile">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="profile">
+
+            <div class="row g-4">
+                <div class="col-xl-4">
+                    <div class="account-profile-card">
+                        <div class="account-profile-avatar">
+                            {% if request.user.profile_image %}
+                            <img src="{{ request.user.profile_image.url }}" alt="{{ request.user.get_full_name|default:request.user.email }}">
+                            {% else %}
+                            <span class="account-profile-initial">{{ request.user.first_name|default:request.user.email|slice:":1"|upper }}</span>
+                            {% endif %}
+                        </div>
+
+                        <h4 class="account-profile-name">{{ request.user.get_full_name|default:request.user.email }}</h4>
+                        <p class="account-profile-email">{{ request.user.email }}</p>
+
+                        <div class="account-profile-meta">
+                            <div class="account-profile-meta-item">
+                                <span>Account Type</span>
+                                <strong>Customer</strong>
+                            </div>
+                            <div class="account-profile-meta-item">
+                                <span>Phone</span>
+                                <strong>{{ request.user.phone|default:"Not set" }}</strong>
+                            </div>
+                        </div>
+
+                        <div class="account-profile-upload">
+                            <label for="{{ profile_form.profile_image.id_for_label }}">Update Photo</label>
+                            {{ profile_form.profile_image }}
+                            {{ profile_form.profile_image.errors }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-8">
+                    <div class="account-profile-panel">
+                        <div class="account-profile-panel-head">
+                            <h4>Edit Information</h4>
+                            <p>These details will be used for your account and order information.</p>
+                        </div>
+
+                        <div class="account-profile-form">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <span class="ec-login-wrap" style="display:block; margin-bottom: 18px;">
+                                        <label for="{{ profile_form.first_name.id_for_label }}">First Name</label>
+                                        {{ profile_form.first_name }}
+                                        {{ profile_form.first_name.errors }}
+                                    </span>
+                                </div>
+                                <div class="col-md-6">
+                                    <span class="ec-login-wrap" style="display:block; margin-bottom: 18px;">
+                                        <label for="{{ profile_form.last_name.id_for_label }}">Last Name</label>
+                                        {{ profile_form.last_name }}
+                                        {{ profile_form.last_name.errors }}
+                                    </span>
+                                </div>
+                                <div class="col-md-6">
+                                    <span class="ec-login-wrap" style="display:block; margin-bottom: 18px;">
+                                        <label>Email Address</label>
+                                        <input type="email" class="form-control" value="{{ request.user.email }}" disabled>
+                                    </span>
+                                </div>
+                                <div class="col-md-6">
+                                    <span class="ec-login-wrap" style="display:block; margin-bottom: 18px;">
+                                        <label for="{{ profile_form.phone.id_for_label }}">Phone Number</label>
+                                        {{ profile_form.phone }}
+                                        {{ profile_form.phone.errors }}
+                                    </span>
+                                </div>
+                                <div class="col-12">
+                                    <span class="ec-login-wrap" style="display:block; margin-bottom: 0;">
+                                        <label for="{{ profile_form.address.id_for_label }}">Address</label>
+                                        {{ profile_form.address }}
+                                        {{ profile_form.address.errors }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="account-profile-actions">
+                            <p class="account-profile-note">Update your profile so your checkout details stay accurate and your account feels complete.</p>
+                            <button class="btn btn-primary account-profile-btn" type="submit">Save Changes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

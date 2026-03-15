@@ -1,0 +1,513 @@
+{% extends "back/base.html" %}
+{% load static %}
+{% load math_filters %}
+
+{% block extra_css %}
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
+{% endblock %}
+
+{% block custom_css %}
+<style>
+    .tbl-thumb {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 6px;
+        border: 1px solid #dee2e6;
+    }
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 4px 8px;
+    }
+    .stock-badge {
+        font-size: 0.75rem;
+        padding: 3px 7px;
+    }
+    .offer-badge {
+        background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+        color: white;
+        font-size: 0.75rem;
+        padding: 3px 8px;
+        border-radius: 12px;
+    }
+    .discount-active {
+        background: linear-gradient(45deg, #28a745, #20c997);
+        color: white;
+        font-size: 0.75rem;
+        padding: 3px 8px;
+        border-radius: 12px;
+        display: inline-block;
+        margin-bottom: 2px;
+    }
+    .dropdown-menu {
+        min-width: 120px;
+    }
+    .action-buttons {
+        white-space: nowrap;
+    }
+    /* Fix for DataTables in card */
+    .dataTables_wrapper {
+        padding: 0;
+    }
+    .dataTables_filter {
+        margin-bottom: 1rem;
+    }
+    /* Make table responsive */
+    table.dataTable tbody td {
+        vertical-align: middle;
+    }
+    .price-container {
+        line-height: 1.4;
+    }
+    .original-price {
+        text-decoration: line-through;
+        color: #6c757d;
+        font-size: 0.9em;
+    }
+    .discounted-price {
+        color: #dc3545;
+        font-weight: bold;
+        font-size: 1.1em;
+    }
+    .savings-text {
+        color: #28a745;
+        font-size: 0.8em;
+    }
+    .discount-info {
+        font-size: 0.8em;
+        color: #6c757d;
+    }
+</style>
+{% endblock custom_css %}
+
+{% block content %}
+<div class="ec-content-wrapper">
+    <div class="content">
+        <!-- Header -->
+        <div class="breadcrumb-wrapper d-flex align-items-center justify-content-between">
+            <div>
+                <h1>Products</h1>
+                <p class="breadcrumbs">
+                    <span><a href="{% url 'dashboard' %}">Home</a></span>
+                    <span><i class="mdi mdi-chevron-right"></i></span>Products
+                </p>
+            </div>
+            <div>
+                <a href="{% url 'add_product' %}" class="btn btn-primary">
+                    <i class="mdi mdi-plus me-2"></i>Add Product
+                </a>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+        <div class="row mb-4">
+            <div class="col-12">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Stats Summary -->
+        <div class="row mb-4">
+            <div class="col-xl-3 col-lg-6">
+                <div class="card card-default">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <div class="icon icon-primary">
+                                    <i class="mdi mdi-cube-outline"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h5 class="mb-1">{{ products.count }}</h5>
+                                <p class="text-muted mb-0">Total Products</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-lg-6">
+                <div class="card card-default">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <div class="icon icon-success">
+                                    <i class="mdi mdi-check-circle-outline"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h5 class="mb-1">{{ active_products|default:products.count }}</h5>
+                                <p class="text-muted mb-0">Active Products</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-lg-6">
+                <div class="card card-default">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <div class="icon icon-warning">
+                                    <i class="mdi mdi-alert-circle-outline"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h5 class="mb-1">{{ low_stock_count|default:0 }}</h5>
+                                <p class="text-muted mb-0">Low Stock (< 10)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-lg-6">
+                <div class="card card-default">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <div class="icon icon-danger">
+                                    <i class="mdi mdi-close-circle-outline"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h5 class="mb-1">{{ out_of_stock_count|default:0 }}</h5>
+                                <p class="text-muted mb-0">Out of Stock</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Table -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-default">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table id="responsive-data-table" class="table table-hover" style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Name</th>
+                                        <th>SKU</th>
+                                        <th>Price</th>
+                                        <th>Offer</th>
+                                        <th>Stock</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for product in products %}
+                                    <tr>
+                                        <!-- Product Image -->
+                                        <td>
+                                            {% if product.thumbnail_image %}
+                                            <img class="tbl-thumb" src="{{ product.thumbnail_image.url }}" 
+                                                 alt="{{ product.title }}" 
+                                                 onerror="this.src='{% static 'assets/img/products/placeholder.jpg' %}'">
+                                            {% else %}
+                                            <img class="tbl-thumb" src="{% static 'assets/img/products/placeholder.jpg' %}" 
+                                                 alt="{{ product.title }}">
+                                            {% endif %}
+                                        </td>
+                                        
+                                        <!-- Product Name -->
+                                        <td>
+                                            <strong>{{ product.title|truncatechars:30 }}</strong>
+                                            {% if product.category %}
+                                            <br><small class="text-muted">{{ product.category.name }}</small>
+                                            {% endif %}
+                                            {% if product.model %}
+                                            <br><small class="text-muted">Model: {{ product.model }}</small>
+                                            {% endif %}
+                                        </td>
+                                        
+                                        <!-- SKU -->
+                                        <td>
+                                            <code>{{ product.sku|truncatechars:15 }}</code>
+                                        </td>
+                                        
+                                        <!-- Price -->
+                                        <td>
+                                            <div class="price-container">
+                                                <!-- Cost Price - Gray -->
+                                                <small style="color: #6c757d; font-size: 0.85em;">
+                                                    Cost: ${{ product.buy_price|floatformat:2 }}
+                                                </small>
+                                                <br>
+                                                
+                                                <!-- Selling Price - Dark Blue -->
+                                                <span style="color: #2c3e50; font-weight: 500;">
+                                                    Selling: ${{ product.selling_price|floatformat:2 }}
+                                                </span>
+                                                <br>
+                                                
+                                                <!-- Discount if exists -->
+                                                {% if product.get_discounted_price < product.selling_price %}
+                                                    {% with active_discount=product.current_discount %}
+                                                    {% if active_discount %}
+                                                        <!-- Discount Type/Amount - Green -->
+                                                        <span style="color: #28a745; font-weight: 600;">
+                                                            {% if active_discount.discount_type == 'percentage' %}
+                                                                Discount: {{ active_discount.percentage|floatformat:0 }}%
+                                                            {% else %}
+                                                                Discount: ${{ active_discount.discount_value|floatformat:2 }}
+                                                            {% endif %}
+                                                        </span>
+                                                        <br>
+                                                        
+                                                        <!-- Discount Amount (calculated) - Light Green -->
+                                                        <small style="color: #20c997; font-size: 0.85em;">
+                                                            Amount: ${{ product.selling_price|sub:product.get_discounted_price|floatformat:2 }}
+                                                        </small>
+                                                        <br>
+                                                    {% endif %}
+                                                    {% endwith %}
+                                                    
+                                                    <!-- Final Price after discount - Red/Bold -->
+                                                    <strong style="color: #dc3545; font-size: 1.05em;">
+                                                        Final: ${{ product.get_discounted_price|floatformat:2 }}
+                                                    </strong>
+                                                {% else %}
+                                                    <!-- If no discount - Dark -->
+                                                    <strong style="color: #343a40; font-size: 1.05em;">
+                                                        Final: ${{ product.selling_price|floatformat:2 }}
+                                                    </strong>
+                                                {% endif %}
+                                                
+                                                <!-- Profit - Blue/Bold -->
+                                                <br>
+                                                <span style="color: #17a2b8; font-weight: 600;">
+                                                    Profit: ${{ product.profit|floatformat:2 }}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        
+                                        <!-- Offer -->
+                                        <td>
+                                            {% if product.get_discounted_price < product.selling_price %}
+                                                <!-- Active discount -->
+                                                <span class="discount-active">
+                                                    {{ product.discount_percentage|floatformat:0 }}% OFF
+                                                </span>
+                                                <br>
+                                                <small class="discount-info">
+                                                    {% with active_discount=product.current_discount %}
+                                                    {% if active_discount %}
+                                                        {% if active_discount.discount_type == 'percentage' %}
+                                                            {{ active_discount.percentage|floatformat:0 }}% Discount
+                                                        {% else %}
+                                                            ${{ active_discount.discount_value|floatformat:2 }} OFF
+                                                        {% endif %}
+                                                        <br>
+                                                        {{ active_discount.start_date|date:"M d" }} - {{ active_discount.end_date|date:"M d" }}
+                                                    {% endif %}
+                                                    {% endwith %}
+                                                </small>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                            
+                                            <!-- Product flags -->
+                                            {% if product.new %}
+                                            <br><span class="badge bg-info status-badge mt-1">NEW</span>
+                                            {% endif %}
+                                            {% if product.featured %}
+                                            <br><span class="badge bg-warning status-badge mt-1">FEATURED</span>
+                                            {% endif %}
+                                            {% if product.best_seller %}
+                                            <br><span class="badge bg-danger status-badge mt-1">BEST SELLER</span>
+                                            {% endif %}
+                                            {% if product.trending %}
+                                            <br><span class="badge bg-primary status-badge mt-1">TRENDING</span>
+                                            {% endif %}
+                                        </td>
+                                        
+                                        <!-- Stock -->
+                                        <td>
+                                            {% if product.stock_quantity > 10 %}
+                                            <span class="badge bg-success stock-badge">{{ product.stock_quantity }}</span>
+                                            {% elif product.stock_quantity > 0 %}
+                                            <span class="badge bg-warning stock-badge">{{ product.stock_quantity }}</span>
+                                            {% else %}
+                                            <span class="badge bg-danger stock-badge">0</span>
+                                            {% endif %}
+                                            <br>
+                                            <small class="text-muted">{{ product.get_stock_status_display }}</small>
+                                            {% if product.is_low_stock and product.stock_quantity > 0 %}
+                                            <br><small class="text-warning"><i class="mdi mdi-alert"></i> Low stock</small>
+                                            {% endif %}
+                                        </td>
+                                        
+                                        <!-- Status -->
+                                        <td>
+                                            {% if product.status == 'published' %}
+                                            <span class="badge bg-success status-badge">PUBLISHED</span>
+                                            {% elif product.status == 'draft' %}
+                                            <span class="badge bg-secondary status-badge">DRAFT</span>
+                                            {% elif product.status == 'discontinued' %}
+                                            <span class="badge bg-dark status-badge">DISCONTINUED</span>
+                                            {% endif %}
+                                            {% if not product.is_available %}
+                                            <br><small class="text-danger">Not Available</small>
+                                            {% endif %}
+                                        </td>
+                                        
+                                        <!-- Date -->
+                                        <td>
+                                            {{ product.created_at|date:"M d, Y" }}
+                                            {% if product.published_at %}
+                                            <br><small class="text-muted">Published: {{ product.published_at|date:"M d" }}</small>
+                                            {% endif %}
+                                            <br><small class="text-muted">Updated: {{ product.updated_at|date:"M d" }}</small>
+                                        </td>
+                                        
+                                        <!-- Action -->
+                                        <td>
+                                            <div class="btn-group mb-1 action-buttons">
+                                                <button type="button" class="btn btn-outline-success btn-sm">Info</button>
+                                                <button type="button" class="btn btn-outline-success btn-sm dropdown-toggle dropdown-toggle-split"
+                                                        data-bs-toggle="dropdown" aria-haspopup="true"
+                                                        aria-expanded="false" data-display="static">
+                                                    <span class="sr-only">Info</span>
+                                                </button>
+                                                <div class="dropdown-menu">
+                                                    <a class="dropdown-item" href="{% url 'edit_product' product.id %}">
+                                                        <i class="mdi mdi-pencil me-2"></i>Edit
+                                                    </a>
+                                                    <a class="dropdown-item text-danger" href="#" 
+                                                       data-bs-toggle="modal" data-bs-target="#deleteModal{{ product.id }}">
+                                                        <i class="mdi mdi-delete me-2"></i>Delete
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Delete Modal -->
+                                    <div class="modal fade" id="deleteModal{{ product.id }}" tabindex="-1">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Confirm Delete</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>Are you sure you want to delete <strong>"{{ product.title }}"</strong>?</p>
+                                                    <p class="text-danger"><strong>Warning:</strong> This will also delete all product images and cannot be undone.</p>
+                                                    <div class="alert alert-warning">
+                                                        <h6 class="alert-heading">Product Details:</h6>
+                                                        <p class="mb-1">SKU: <strong>{{ product.sku }}</strong></p>
+                                                        <p class="mb-1">Price: <strong>${{ product.selling_price|floatformat:2 }}</strong></p>
+                                                        {% if product.get_discounted_price < product.selling_price %}
+                                                        <p class="mb-1">Discounted Price: <strong>${{ product.get_discounted_price|floatformat:2 }}</strong></p>
+                                                        <p class="mb-1">Discount: <strong>{{ product.discount_percentage|floatformat:0 }}% OFF</strong></p>
+                                                        {% endif %}
+                                                        <p class="mb-0">Stock: <strong>{{ product.stock_quantity }} units</strong></p>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <form method="POST" action="{% url 'delete_product' product.id %}" style="display: inline;">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-danger">Delete Product</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="9" class="text-center py-5">
+                                            <i class="mdi mdi-cube-outline mdi-48px text-muted"></i>
+                                            <h5 class="mt-3">No products found</h5>
+                                            <p class="text-muted">Add your first product to get started</p>
+                                            <a href="{% url 'add_product' %}" class="btn btn-primary">
+                                                <i class="mdi mdi-plus me-2"></i>Add Product
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+{% endblock %}
+
+{% block custom_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize DataTable
+    if (typeof $.fn.dataTable !== 'undefined') {
+        $('#responsive-data-table').DataTable({
+            "pageLength": 25,
+            "order": [[7, 'desc']], // Sort by date (column 7) descending
+            "responsive": true,
+            "language": {
+                "search": "Search products:",
+                "lengthMenu": "Show _MENU_ entries",
+                "info": "Showing _START_ to _END_ of _TOTAL_ products",
+                "infoEmpty": "Showing 0 to 0 of 0 products",
+                "infoFiltered": "(filtered from _MAX_ total products)",
+                "zeroRecords": "No matching products found",
+                "emptyTable": "No products available",
+                "paginate": {
+                    "previous": "Previous",
+                    "next": "Next"
+                }
+            },
+            "columnDefs": [
+                { "orderable": false, "targets": [0, 8] }, // Disable sorting for image and action columns
+                { "searchable": false, "targets": [0, 8] }, // Disable searching for image and action columns
+                { "type": "num", "targets": 3 }, // Price column for proper sorting
+                { "type": "num", "targets": 5 }  // Stock column for proper sorting
+            ]
+        });
+    } else {
+        console.error('DataTables library not loaded');
+    }
+    
+    // Image error handling
+    const productImages = document.querySelectorAll('.tbl-thumb');
+    productImages.forEach(img => {
+        img.addEventListener('error', function() {
+            this.src = '{% static 'assets/img/products/placeholder.jpg' %}';
+            this.alt = 'No image available';
+        });
+    });
+    
+    // Auto-dismiss alerts after 5 seconds
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(alert => {
+        setTimeout(() => {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }, 5000);
+    });
+});
+</script>
+{% endblock custom_js %}

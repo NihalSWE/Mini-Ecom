@@ -1,0 +1,79 @@
+{% extends "front/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="sticky-header-next-sec ec-breadcrumb section-space-mb">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="row ec_breadcrumb_inner">
+                    <div class="col-md-6 col-sm-12">
+                        <h2 class="ec-breadcrumb-title">Register</h2>
+                    </div>
+                    <div class="col-md-6 col-sm-12">
+                        <ul class="ec-breadcrumb-list">
+                            <li class="ec-breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                            <li class="ec-breadcrumb-item active">Register</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="ec-page-content section-space-p">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="ec-register-wrapper">
+                    <div class="ec-register-container">
+                        <div class="ec-register-form">
+                            {% if messages %}
+                                {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                                {% endfor %}
+                            {% endif %}
+
+                            <form action="{% url 'register' %}" method="post">
+                                {% csrf_token %}
+                                <span class="ec-register-wrap ec-register-half">
+                                    <label>First Name*</label>
+                                    <input type="text" name="first_name" value="{{ request.POST.first_name|default:'' }}" placeholder="Enter your first name" required />
+                                </span>
+                                <span class="ec-register-wrap ec-register-half">
+                                    <label>Last Name*</label>
+                                    <input type="text" name="last_name" value="{{ request.POST.last_name|default:'' }}" placeholder="Enter your last name" required />
+                                </span>
+                                <span class="ec-register-wrap ec-register-half">
+                                    <label>Email*</label>
+                                    <input type="email" name="email" value="{{ request.POST.email|default:'' }}" placeholder="Enter your email address" required />
+                                </span>
+                                <span class="ec-register-wrap ec-register-half">
+                                    <label>Phone Number</label>
+                                    <input type="text" name="phone" value="{{ request.POST.phone|default:'' }}" placeholder="Enter your phone number" />
+                                </span>
+                                <span class="ec-register-wrap">
+                                    <label>Address</label>
+                                    <input type="text" name="address" value="{{ request.POST.address|default:'' }}" placeholder="Address" />
+                                </span>
+                                <span class="ec-register-wrap ec-register-half">
+                                    <label>Password*</label>
+                                    <input type="password" name="password" placeholder="Enter your password" required />
+                                </span>
+                                <span class="ec-register-wrap ec-register-half">
+                                    <label>Confirm Password*</label>
+                                    <input type="password" name="confirm_password" placeholder="Confirm your password" required />
+                                </span>
+                                <span class="ec-register-wrap ec-register-btn">
+                                    <button class="btn btn-primary" type="submit">Register</button>
+                                </span>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}

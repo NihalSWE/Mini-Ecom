@@ -1,0 +1,273 @@
+{% extends "back/base.html" %}
+{% load static %}
+
+{% block custom_css %}
+<style>
+    .image-preview {
+        max-width: 100%;
+        height: auto;
+        margin-top: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 5px;
+    }
+    .required-label:after {
+        content: " *";
+        color: red;
+    }
+    .page-header {
+        border-bottom: 1px solid #dee2e6;
+        padding-bottom: 15px;
+        margin-bottom: 25px;
+    }
+    .current-image {
+        max-width: 300px;
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        padding: 5px;
+        background: #f8f9fa;
+    }
+</style>
+{% endblock custom_css %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1 class="h3 mb-0">Edit Banner: {{ slider.title|truncatechars:50 }}</h1>
+        <p class="text-muted mb-0">Update banner details and image</p>
+    </div>
+
+    <!-- Display messages -->
+    {% if messages %}
+    <div class="row mb-4">
+        <div class="col-12">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                <i class="fas 
+                {% if message.tags == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %} 
+                me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <!-- Current Image Display -->
+                    {% if slider.image %}
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6>Current Image:</h6>
+                            <img src="{{ slider.image.url }}" alt="Current Banner" class="current-image">
+                            <p class="text-muted small mt-2">
+                File: {{ slider.image.name|slice:"15:" }} | 
+                Uploaded: {{ slider.created_at|date:"M d, Y" }}
+                            </p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Dimension Requirement Info -->
+                    <div class="alert alert-info mb-4">
+                        <h6 class="alert-heading mb-2">
+                            <i class="fas fa-ruler-combined me-2"></i>Image Requirements
+                        </h6>
+                        <p class="mb-1"><strong>Dimension:</strong> <span class="badge bg-primary">1374px × 575px</span></p>
+                        <p class="mb-0"><strong>Max Size:</strong> 2MB | <strong>Formats:</strong> JPG, PNG, GIF, WebP</p>
+                        <p class="mb-0 mt-2"><small><em>Note: Leave image field empty to keep current image</em></small></p>
+                    </div>
+
+                    <form method="POST" enctype="multipart/form-data" id="sliderForm">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="row">
+                                    <!-- Title -->
+                                    <div class="col-md-12 mb-3">
+                                        <label for="id_title" class="form-label required-label">Title</label>
+                                        {{ form.title }}
+                                        {% if form.title.errors %}
+                                        <div class="text-danger small mt-1">{{ form.title.errors }}</div>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Subtitle -->
+                                    <div class="col-md-12 mb-3">
+                                        <label for="id_subtitle" class="form-label">Subtitle</label>
+                                        {{ form.subtitle }}
+                                    </div>
+
+                                    <!-- Description -->
+                                    <div class="col-md-12 mb-3">
+                                        <label for="id_description" class="form-label">Description</label>
+                                        {{ form.description }}
+                                    </div>
+
+                                    <!-- Price Fields -->
+                                    <div class="col-md-6 mb-3">
+                                        <label for="id_price" class="form-label">Price</label>
+                                        {{ form.price }}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="id_price_text" class="form-label">Price Text</label>
+                                        {{ form.price_text }}
+                                    </div>
+
+                                    <!-- Button Fields -->
+                                    <div class="col-md-6 mb-3">
+                                        <label for="id_button_text" class="form-label">Button Text</label>
+                                        {{ form.button_text }}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="id_button_link" class="form-label">Button Link</label>
+                                        {{ form.button_link }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <!-- Image Upload -->
+                                <div class="mb-3">
+                                    <label for="id_image" class="form-label">New Banner Image</label>
+                                    {{ form.image }}
+                                    <div class="form-text">
+                                        {{ form.image.help_text }}
+                                    </div>
+                                    
+                                    <!-- New Image Preview -->
+                                    <div class="mt-3 text-center">
+                                        <img id="imagePreview" class="image-preview" alt="New Image Preview" style="display: none;">
+                                        <div id="dimensionInfo" class="mt-2 small" style="display: none;">
+                                            <span id="dimensionText" class="badge bg-secondary"></span>
+                                            <span id="validationIcon" class="ms-2"></span>
+                                        </div>
+                                    </div>
+                                    
+                                    {% if form.image.errors %}
+                                    <div class="alert alert-danger small mt-2 p-2">
+                                        {{ form.image.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Order -->
+                                <div class="mb-3">
+                                    <label for="id_order" class="form-label">Display Order</label>
+                                    {{ form.order }}
+                                    <div class="form-text">Lower number displays first</div>
+                                </div>
+
+                                <!-- Status -->
+                                <div class="mb-3">
+                                    <label for="id_status" class="form-label">Status</label>
+                                    {{ form.status }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <a href="{% url 'banner_list' %}" class="btn btn-secondary">
+                                        <i class="fas fa-arrow-left me-2"></i> Back to List
+                                    </a>
+                                    <div class="d-flex gap-2">
+                                        <button type="reset" class="btn btn-outline-secondary">
+                                            <i class="fas fa-redo me-2"></i> Reset Changes
+                                        </button>
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-save me-2"></i> Update Banner
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block custom_js %}
+<script>
+    // Image preview and dimension validation for NEW image only
+    document.getElementById('id_image').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        const preview = document.getElementById('imagePreview');
+        const dimensionText = document.getElementById('dimensionText');
+        const dimensionInfo = document.getElementById('dimensionInfo');
+        const validationIcon = document.getElementById('validationIcon');
+        
+        if (file) {
+            // Check file size (2MB limit)
+            if (file.size > 2 * 1024 * 1024) {
+                alert('File size exceeds 2MB limit!');
+                this.value = '';
+                preview.style.display = 'none';
+                dimensionInfo.style.display = 'none';
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                
+                // Get image dimensions
+                const img = new Image();
+                img.onload = function() {
+                    const width = this.width;
+                    const height = this.height;
+                    
+                    dimensionText.textContent = `${width}px × ${height}px`;
+                    dimensionInfo.style.display = 'block';
+                    
+                    // Check if dimensions match required size
+                    if (width === 1374 && height === 575) {
+                        dimensionText.className = 'badge bg-success';
+                        validationIcon.innerHTML = '<i class="fas fa-check-circle text-success"></i>';
+                    } else {
+                        dimensionText.className = 'badge bg-danger';
+                        validationIcon.innerHTML = 
+                            `<i class="fas fa-exclamation-circle text-danger"></i>`;
+                    }
+                };
+                img.src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        } else {
+            preview.style.display = 'none';
+            dimensionInfo.style.display = 'none';
+        }
+    });
+
+    // Add Bootstrap classes to form inputs
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add form-control class to all inputs, selects, and textareas
+        const formElements = document.querySelectorAll('#sliderForm input, #sliderForm select, #sliderForm textarea');
+        formElements.forEach(element => {
+            if (!element.classList.contains('form-control')) {
+                element.classList.add('form-control');
+            }
+        });
+        
+        // Clear image field on reset
+        const resetButton = document.querySelector('button[type="reset"]');
+        if (resetButton) {
+            resetButton.addEventListener('click', function() {
+                document.getElementById('imagePreview').style.display = 'none';
+                document.getElementById('dimensionInfo').style.display = 'none';
+            });
+        }
+    });
+</script>
+{% endblock custom_js %}

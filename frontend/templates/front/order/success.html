@@ -1,0 +1,62 @@
+{% extends "front/base.html" %}
+
+{% load static %}
+
+{% block content %}
+<div class="sticky-header-next-sec ec-breadcrumb section-space-mb">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="row ec_breadcrumb_inner">
+                    <div class="col-md-6 col-sm-12">
+                        <h2 class="ec-breadcrumb-title">Order Confirmation</h2>
+                    </div>
+                    <div class="col-md-6 col-sm-12">
+                        <ul class="ec-breadcrumb-list">
+                            <li class="ec-breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                            <li class="ec-breadcrumb-item active">Order Success</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="ec-page-content section-space-p">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-md-10">
+                <div class="card text-center p-5">
+                    <div class="mb-4">
+                        <i class="mdi mdi-check-circle" style="font-size: 80px; color: #28a745;"></i>
+                    </div>
+                    <h2 class="mb-3">Thank You for Your Order!</h2>
+                    <p class="lead">Your order has been placed successfully.</p>
+                    
+                    {% if order %}
+                    <div class="alert alert-info mt-4">
+                        <h4>Order Details</h4>
+                        <p class="mb-1"><strong>Order ID:</strong> {{ order.order_id }}</p>
+                        <p class="mb-1"><strong>Total Amount:</strong> ৳{{ order.total_amount }}</p>
+                        <p class="mb-1"><strong>Payment Method:</strong> {{ order.get_payment_method_display }}</p>
+                        <p class="mb-0"><strong>Status:</strong> {{ order.get_status_display }}</p>
+                    </div>
+                    
+                    <p class="mt-3">
+                        We've sent a confirmation email to <strong>{{ order.email }}</strong>
+                    </p>
+                    {% endif %}
+                    
+                    <div class="mt-4">
+                        <a href="{% url 'home' %}" class="btn btn-primary">Continue Shopping</a>
+                        {% if request.user.is_authenticated %}
+                        <a href="{% url 'user_dashboard' %}" class="btn btn-secondary">Open Dashboard</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}

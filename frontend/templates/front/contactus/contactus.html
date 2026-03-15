@@ -1,0 +1,244 @@
+{% extends "front/base.html" %}
+
+{% block content %}
+<div class="sticky-header-next-sec ec-breadcrumb section-space-mb">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="row ec_breadcrumb_inner">
+                    <div class="col-md-6 col-sm-12">
+                        <h2 class="ec-breadcrumb-title">{{ contact_page.page_title }}</h2>
+                    </div>
+                    <div class="col-md-6 col-sm-12">
+                        <ul class="ec-breadcrumb-list">
+                            <li class="ec-breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                            <li class="ec-breadcrumb-item active">{{ contact_page.page_title }}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="ec-page-content section-space-p">
+    <div class="container">
+        {% if messages %}
+        <div class="row">
+            <div class="col-12">
+                {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} alert-dismissible fade show mb-4" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        <div class="row">
+            <div class="ec-common-wrapper">
+                <div class="ec-contact-leftside">
+                    <div class="ec-contact-container">
+                        <div class="ec-contact-form">
+                            <form action="{% url 'contactus' %}" method="post" id="contactMessageForm" novalidate>
+                                {% csrf_token %}
+                                <span class="ec-contact-wrap">
+                                    <label>First Name*</label>
+                                    <input
+                                        type="text"
+                                        name="{{ contact_form.first_name.html_name }}"
+                                        value="{{ contact_form.first_name.value|default:'' }}"
+                                        placeholder="Enter your first name"
+                                        class="form-control{% if contact_form.first_name.errors %} is-invalid{% endif %}"
+                                        required
+                                    >
+                                    <small class="text-danger field-error">{{ contact_form.first_name.errors|join:', ' }}</small>
+                                </span>
+                                <span class="ec-contact-wrap">
+                                    <label>Last Name*</label>
+                                    <input
+                                        type="text"
+                                        name="{{ contact_form.last_name.html_name }}"
+                                        value="{{ contact_form.last_name.value|default:'' }}"
+                                        placeholder="Enter your last name"
+                                        class="form-control{% if contact_form.last_name.errors %} is-invalid{% endif %}"
+                                        required
+                                    >
+                                    <small class="text-danger field-error">{{ contact_form.last_name.errors|join:', ' }}</small>
+                                </span>
+                                <span class="ec-contact-wrap">
+                                    <label>Email*</label>
+                                    <input
+                                        type="email"
+                                        name="{{ contact_form.email.html_name }}"
+                                        value="{{ contact_form.email.value|default:'' }}"
+                                        placeholder="Enter your email address"
+                                        class="form-control{% if contact_form.email.errors %} is-invalid{% endif %}"
+                                        required
+                                    >
+                                    <small class="text-danger field-error">{{ contact_form.email.errors|join:', ' }}</small>
+                                </span>
+                                <span class="ec-contact-wrap">
+                                    <label>Phone Number*</label>
+                                    <input
+                                        type="text"
+                                        name="{{ contact_form.phone.html_name }}"
+                                        id="contact-phone"
+                                        value="{{ contact_form.phone.value|default:'' }}"
+                                        placeholder="01XXXXXXXXX"
+                                        class="form-control{% if contact_form.phone.errors %} is-invalid{% endif %}"
+                                        required
+                                        maxlength="11"
+                                        inputmode="numeric"
+                                    >
+                                    <small class="text-danger field-error">{{ contact_form.phone.errors|join:', ' }}</small>
+                                </span>
+                                <span class="ec-contact-wrap">
+                                    <label>Comments/Questions*</label>
+                                    <textarea
+                                        name="{{ contact_form.message.html_name }}"
+                                        placeholder="Please leave your comments here.."
+                                        class="form-control{% if contact_form.message.errors %} is-invalid{% endif %}"
+                                        rows="5"
+                                        required
+                                    >{{ contact_form.message.value|default:'' }}</textarea>
+                                    <small class="text-danger field-error">{{ contact_form.message.errors|join:', ' }}</small>
+                                </span>
+                                <span class="ec-contact-wrap ec-contact-btn">
+                                    <button class="btn btn-primary" type="submit">Submit</button>
+                                </span>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="ec-contact-rightside">
+                    {% if contact_page.map_embed_url %}
+                    <div class="ec_contact_map">
+                        <div class="ec_map_canvas">
+                            <iframe id="ec_map_canvas" src="{{ contact_page.map_embed_url }}" loading="lazy"></iframe>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="ec_contact_info">
+                        <h1 class="ec_contact_info_head">{{ contact_page.heading }}</h1>
+                        {% if contact_page.subtitle %}
+                        <p>{{ contact_page.subtitle }}</p>
+                        {% endif %}
+                        <ul class="align-items-center">
+                            <li class="ec-contact-item">
+                                <i class="ecicon eci-map-marker" aria-hidden="true"></i>
+                                <span>Address :</span>{{ contact_page.address|safe }}
+                            </li>
+                            <li class="ec-contact-item align-items-center">
+                                <i class="ecicon eci-phone" aria-hidden="true"></i>
+                                <span>Call Us :</span><a href="tel:{{ contact_page.phone|default:'' }}">{{ contact_page.phone }}</a>
+                            </li>
+                            <li class="ec-contact-item align-items-center">
+                                <i class="ecicon eci-envelope" aria-hidden="true"></i>
+                                <span>Email :</span><a href="mailto:{{ contact_page.email }}">{{ contact_page.email }}</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}
+
+{% block custom_js %}
+<script>
+  (function () {
+    const form = document.getElementById('contactMessageForm');
+    if (!form) return;
+
+    const phoneInput = document.getElementById('contact-phone');
+    const bdPhoneRegex = /^01[3-9]\d{8}$/;
+
+    const getErrorNode = (field) => field.closest('.ec-contact-wrap')?.querySelector('.field-error');
+
+    const setFieldError = (field, message) => {
+      field.classList.add('is-invalid');
+      const errorNode = getErrorNode(field);
+      if (errorNode) errorNode.textContent = message;
+    };
+
+    const clearFieldError = (field) => {
+      field.classList.remove('is-invalid');
+      const errorNode = getErrorNode(field);
+      if (errorNode && !errorNode.dataset.serverError) errorNode.textContent = '';
+    };
+
+    form.querySelectorAll('.field-error').forEach((node) => {
+      if (node.textContent.trim()) node.dataset.serverError = '1';
+    });
+
+    if (phoneInput) {
+      phoneInput.addEventListener('input', function () {
+        const digitsOnly = this.value.replace(/\D/g, '').slice(0, 11);
+        this.value = digitsOnly;
+
+        if (!digitsOnly) {
+          setFieldError(this, 'Phone number is required.');
+          return;
+        }
+
+        if (!bdPhoneRegex.test(digitsOnly)) {
+          setFieldError(this, 'Your number is not matching BD format.');
+          return;
+        }
+
+        const errorNode = getErrorNode(this);
+        if (errorNode) {
+          errorNode.textContent = '';
+          delete errorNode.dataset.serverError;
+        }
+        this.classList.remove('is-invalid');
+      });
+    }
+
+    form.addEventListener('submit', function (event) {
+      let hasErrors = false;
+
+      form.querySelectorAll('input[required], textarea[required]').forEach((field) => {
+        const value = field.value.trim();
+        const errorNode = getErrorNode(field);
+        if (errorNode) {
+          errorNode.textContent = '';
+          delete errorNode.dataset.serverError;
+        }
+        field.classList.remove('is-invalid');
+
+        if (!value) {
+          setFieldError(field, 'This field is required.');
+          hasErrors = true;
+          return;
+        }
+
+        if (field.type === 'email' && !field.checkValidity()) {
+          setFieldError(field, 'Enter a valid email address.');
+          hasErrors = true;
+          return;
+        }
+
+        if (field.name === 'phone' && !bdPhoneRegex.test(value)) {
+          setFieldError(field, 'Your number is not matching BD format.');
+          hasErrors = true;
+        }
+      });
+
+      if (hasErrors) {
+        event.preventDefault();
+      }
+    });
+
+    form.querySelectorAll('input, textarea').forEach((field) => {
+      field.addEventListener('input', function () {
+        if (field.name !== 'phone' && field.value.trim()) {
+          clearFieldError(field);
+        }
+      });
+    });
+  })();
+</script>
+{% endblock custom_js %}

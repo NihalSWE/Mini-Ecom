@@ -1,0 +1,116 @@
+{% load static %}
+
+<!-- Header start  -->
+<header class="ec-header">
+    <div class="ec-header-bottom d-none d-lg-block">
+        <div class="container position-relative">
+            <div class="row">
+                <div class="ec-flex">
+                    <div class="align-self-center">
+                        <div class="header-logo">
+                            <a href="{% url 'home' %}">
+                                <img src="{% if site_branding.logo %}{{ site_branding.logo.url }}{% else %}{% static 'assets/images/logo/logo-7.png' %}{% endif %}" alt="{{ site_branding.site_name|default:'Site Logo' }}">
+                                <img class="dark-logo" src="{% if site_branding.dark_logo %}{{ site_branding.dark_logo.url }}{% elif site_branding.logo %}{{ site_branding.logo.url }}{% else %}{% static 'assets/images/logo/dark-logo-7.png' %}{% endif %}" alt="{{ site_branding.site_name|default:'Site Logo' }}" style="display: none;">
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="align-self-center">
+                        <div class="header-search">
+                            <form class="ec-btn-group-form" action="{% url 'allProducts' %}" method="get">
+                                <input class="form-control" placeholder="Enter Your Product Name..." type="text" name="q" value="{{ request.GET.q|default:'' }}">
+                                <button class="submit" type="submit"><i class="fi-rr-search"></i></button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="align-self-center">
+                        <div class="ec-header-bottons">
+                            <div class="ec-header-user dropdown">
+                                <button class="dropdown-toggle" data-bs-toggle="dropdown"><i class="fi-rr-user"></i></button>
+                                <ul class="dropdown-menu dropdown-menu-right">
+                                    {% if request.user.is_authenticated %}
+                                    {% if request.user.is_superuser or request.user.user_type == 0 %}
+                                    <li><a class="dropdown-item" href="{% url 'dashboard' %}">Dashboard</a></li>
+                                    {% else %}
+                                    <li><a class="dropdown-item" href="{% url 'user_dashboard' %}">My Dashboard</a></li>
+                                    {% endif %}
+                                    <li><a class="dropdown-item" href="{% url 'user_dashboard' %}">Profile & Password</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                                    {% else %}
+                                    <li><a class="dropdown-item" href="{% url 'register' %}">Register</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'login' %}">Login</a></li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+
+                            <a href="#ec-side-cart" class="ec-header-btn ec-side-toggle">
+                                <div class="header-icon"><i class="fi-rr-shopping-basket"></i></div>
+                                <span class="ec-header-count ec-cart-count cart-count-lable">{{ cart_count }}</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ec-header-bottom d-lg-none">
+        <div class="container position-relative">
+            <div class="row">
+                <div class="col">
+                    <div class="header-logo">
+                        <a href="{% url 'home' %}">
+                            <img src="{% if site_branding.logo %}{{ site_branding.logo.url }}{% else %}{% static 'assets/images/logo/logo-7.png' %}{% endif %}" alt="{{ site_branding.site_name|default:'Site Logo' }}">
+                            <img class="dark-logo" src="{% if site_branding.dark_logo %}{{ site_branding.dark_logo.url }}{% elif site_branding.logo %}{{ site_branding.logo.url }}{% else %}{% static 'assets/images/logo/dark-logo-7.png' %}{% endif %}" alt="{{ site_branding.site_name|default:'Site Logo' }}" style="display: none;">
+                        </a>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="header-search">
+                        <form class="ec-btn-group-form" action="{% url 'allProducts' %}" method="get">
+                            <input class="form-control" placeholder="Enter Your Product Name..." type="text" name="q" value="{{ request.GET.q|default:'' }}">
+                            <button class="submit" type="submit"><i class="fi-rr-search"></i></button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<!-- Header End  -->
+
+<!-- Ekka Cart Start -->
+<div class="ec-side-cart-overlay"></div>
+<div id="ec-side-cart" class="ec-side-cart">
+    <div class="ec-cart-inner">
+        <div class="ec-cart-top">
+            <div class="ec-cart-title">
+                <span class="cart_title">My Cart</span>
+                <button class="ec-close">×</button>
+            </div>
+
+            <ul class="eccart-pro-items" id="side-cart-list">
+                {% include "front/partial/side_cart_items.html" with side_cart_items=side_cart_items %}
+            </ul>
+        </div>
+
+        <div class="ec-cart-bottom">
+            <div class="cart-sub-total">
+                <table class="table cart-table">
+                    <tbody>
+                        <tr>
+                            <td class="text-left">Total :</td>
+                            <td class="text-right primary-color" id="side-cart-total">৳{{ cart_global_total }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="cart_btn">
+                <a href="{% url 'cart' %}" class="btn btn-primary">View Cart</a>
+                <a href="{% url 'checkout' %}" class="btn btn-secondary">Checkout</a>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Ekka Cart End -->

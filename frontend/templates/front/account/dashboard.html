@@ -1,0 +1,131 @@
+{% extends "front/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="sticky-header-next-sec ec-breadcrumb section-space-mb">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="row ec_breadcrumb_inner">
+                    <div class="col-md-6 col-sm-12">
+                        <h2 class="ec-breadcrumb-title">My Dashboard</h2>
+                    </div>
+                    <div class="col-md-6 col-sm-12">
+                        <ul class="ec-breadcrumb-list">
+                            <li class="ec-breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                            <li class="ec-breadcrumb-item active">My Dashboard</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="ec-page-content section-space-p">
+    <div class="container">
+        <div id="dashboard-alerts">
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <div class="row">
+            <div class="col-lg-4 col-xl-3">
+                <div class="ec-login-wrapper mb-4">
+                    <div class="ec-login-container">
+                        <div class="ec-login-form text-center">
+                            {% if request.user.profile_image %}
+                            <img src="{{ request.user.profile_image.url }}" alt="{{ request.user.get_full_name|default:request.user.email }}" style="width: 110px; height: 110px; object-fit: cover; border-radius: 50%; margin-bottom: 16px;">
+                            {% else %}
+                            <div style="width: 110px; height: 110px; margin: 0 auto 16px; border-radius: 50%; background: #f3f5f7; display: flex; align-items: center; justify-content: center; font-size: 36px; color: #4b5966;">
+                                {{ request.user.first_name|default:request.user.email|slice:":1"|upper }}
+                            </div>
+                            {% endif %}
+                            <h4 style="margin-bottom: 8px;">{{ request.user.get_full_name|default:request.user.email }}</h4>
+                            <p style="margin-bottom: 0;">{{ request.user.email }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="nav flex-column nav-pills" id="dashboard-tab-nav" role="tablist" aria-orientation="vertical">
+                    <button class="nav-link{% if active_tab == 'overview' %} active{% endif %}" id="dashboard-overview-tab" data-bs-toggle="pill" data-bs-target="#dashboard-overview" type="button" role="tab" aria-controls="dashboard-overview" aria-selected="{% if active_tab == 'overview' %}true{% else %}false{% endif %}">Overview</button>
+                    <button class="nav-link{% if active_tab == 'profile' %} active{% endif %}" id="dashboard-profile-tab" data-bs-toggle="pill" data-bs-target="#dashboard-profile" type="button" role="tab" aria-controls="dashboard-profile" aria-selected="{% if active_tab == 'profile' %}true{% else %}false{% endif %}">Profile</button>
+                    <button class="nav-link{% if active_tab == 'orders' %} active{% endif %}" id="dashboard-orders-tab" data-bs-toggle="pill" data-bs-target="#dashboard-orders" type="button" role="tab" aria-controls="dashboard-orders" aria-selected="{% if active_tab == 'orders' %}true{% else %}false{% endif %}">Orders</button>
+                    <button class="nav-link{% if active_tab == 'password' %} active{% endif %}" id="dashboard-password-tab" data-bs-toggle="pill" data-bs-target="#dashboard-password" type="button" role="tab" aria-controls="dashboard-password" aria-selected="{% if active_tab == 'password' %}true{% else %}false{% endif %}">Change Password</button>
+                </div>
+            </div>
+
+            <div class="col-lg-8 col-xl-9">
+                <div class="tab-content" id="dashboard-tab-content">
+                    <div class="tab-pane fade{% if active_tab == 'overview' %} show active{% endif %}" id="dashboard-overview" role="tabpanel" aria-labelledby="dashboard-overview-tab">
+                        {% include "front/account/partials/overview_tab.html" %}
+                    </div>
+                    <div class="tab-pane fade{% if active_tab == 'profile' %} show active{% endif %}" id="dashboard-profile" role="tabpanel" aria-labelledby="dashboard-profile-tab">
+                        {% include "front/account/partials/profile_tab.html" %}
+                    </div>
+                    <div class="tab-pane fade{% if active_tab == 'orders' %} show active{% endif %}" id="dashboard-orders" role="tabpanel" aria-labelledby="dashboard-orders-tab">
+                        {% include "front/account/partials/orders_tab.html" %}
+                    </div>
+                    <div class="tab-pane fade{% if active_tab == 'password' %} show active{% endif %}" id="dashboard-password" role="tabpanel" aria-labelledby="dashboard-password-tab">
+                        {% include "front/account/partials/password_tab.html" %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var forms = document.querySelectorAll('.js-dashboard-form');
+    var alerts = document.getElementById('dashboard-alerts');
+
+    function bindDashboardForms() {
+        forms = document.querySelectorAll('.js-dashboard-form');
+        forms.forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                var formData = new FormData(form);
+                var tabName = form.getAttribute('data-tab');
+                var tabPane = document.getElementById('dashboard-' + tabName);
+
+                fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                })
+                .then(async function (response) {
+                    var data = await response.json();
+                    return { ok: response.ok, data: data };
+                })
+                .then(function (result) {
+                    if (tabPane && result.data.html) {
+                        tabPane.innerHTML = result.data.html;
+                    }
+
+                    alerts.innerHTML = '<div class="alert alert-' + (result.ok ? 'success' : 'danger') + '">' + result.data.message + '</div>';
+
+                    var trigger = document.getElementById('dashboard-' + tabName + '-tab');
+                    if (trigger && window.bootstrap && window.bootstrap.Tab) {
+                        window.bootstrap.Tab.getOrCreateInstance(trigger).show();
+                    }
+
+                    bindDashboardForms();
+                })
+                .catch(function () {
+                    alerts.innerHTML = '<div class="alert alert-danger">Something went wrong. Please try again.</div>';
+                });
+            });
+        });
+    }
+
+    bindDashboardForms();
+});
+</script>
+{% endblock content %}

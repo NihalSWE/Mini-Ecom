@@ -1,0 +1,522 @@
+{% extends "front/base.html" %}
+
+{% load static %}
+
+{% block custom_css %}
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+<link rel="stylesheet" href="{% static 'assets/css/backgrounds/bg-4.css' %}">
+<style>
+    body.checkout_page {
+        background: var(--ec-checkout-bg);
+    }
+    
+    /* Select2 styling for checkout */
+    .select2-container {
+        width: 100% !important;
+    }
+    
+    .select2-container--default .select2-selection--single {
+        height: 45px !important;
+        padding: 8px 12px;
+        border: 1px solid #ededed;
+        border-radius: 5px;
+    }
+    
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 28px !important;
+    }
+    
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 43px !important;
+    }
+    
+    /* Delivery charge display */
+    .delivery-info {
+        background: #f8f9fa;
+        padding: 10px 15px;
+        border-radius: 5px;
+        margin-top: 10px;
+        font-size: 14px;
+    }
+    
+    .delivery-info.loading {
+        background: #fff3cd;
+    }
+    
+    .delivery-info.success {
+        background: #d1ecf1;
+    }
+
+    @media (max-width: 767.98px) {
+        .ec_breadcrumb_inner {
+            row-gap: 10px;
+            text-align: center;
+        }
+
+        .ec-breadcrumb-list {
+            justify-content: center;
+        }
+
+        .ec-checkout-leftside,
+        .ec-checkout-rightside {
+            padding-left: 12px;
+            padding-right: 12px;
+        }
+
+        .ec-checkout-rightside {
+            margin-top: 24px;
+        }
+
+        .ec-checkout-pro .ec-product-inner {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .ec-checkout-pro .ec-pro-image-outer {
+            flex: 0 0 72px;
+            max-width: 72px;
+        }
+
+        .ec-checkout-pro .ec-pro-content {
+            min-width: 0;
+            padding-top: 0;
+        }
+
+        .ec-checkout-summary div,
+        .ec-checkout-summary-total {
+            gap: 8px;
+        }
+
+        .ec-check-order-btn .btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock custom_css %}
+
+{% block content %}
+<div class="sticky-header-next-sec ec-breadcrumb section-space-mb">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="row ec_breadcrumb_inner">
+                    <div class="col-md-6 col-sm-12">
+                        <h2 class="ec-breadcrumb-title">Checkout</h2>
+                    </div>
+                    <div class="col-md-6 col-sm-12">
+                        <ul class="ec-breadcrumb-list">
+                            <li class="ec-breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                            <li class="ec-breadcrumb-item active">Checkout</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="ec-page-content section-space-p">
+    <div class="container">
+        <form action="{% url 'checkout' %}" method="POST" id="checkoutForm">
+            {% csrf_token %}
+            <div class="row">
+                
+                <div class="ec-checkout-leftside col-lg-8 col-md-12">
+                    <div class="ec-checkout-content">
+                        <div class="ec-checkout-inner">
+                            
+                            {% if not request.user.is_authenticated %}
+                            <div class="ec-checkout-wrap margin-bottom-30">
+                                <div class="ec-checkout-block ec-check-new">
+                                    <h3 class="ec-checkout-title">Customer Info</h3>
+                                    <div class="ec-check-block-content">
+                                        <div class="ec-new-desc">
+                                            Already have an account? <a href="{% url 'login' %}">Login here</a> for a faster checkout.
+                                            Or continue as a guest below.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <div class="ec-checkout-wrap margin-bottom-30 padding-bottom-3">
+                                <div class="ec-checkout-block ec-check-bill">
+                                    <h3 class="ec-checkout-title">Billing Details</h3>
+                                    <div class="ec-bl-block-content">
+                                        
+                                        <div class="ec-check-bill-form">
+                                            
+                                            <span class="ec-bill-wrap ec-bill-half">
+                                                <label>First Name*</label>
+                                                <input type="text" name="first_name" value="{{ form.first_name.value|default:'' }}" required placeholder="Enter your first name" />
+                                            </span>
+                                            
+                                            <span class="ec-bill-wrap ec-bill-half">
+                                                <label>Last Name*</label>
+                                                <input type="text" name="last_name" value="{{ form.last_name.value|default:'' }}" required placeholder="Enter your last name" />
+                                            </span>
+                                            
+                                            <span class="ec-bill-wrap ec-bill-half">
+                                                <label>Email Address*</label>
+                                                <input type="email" name="email" value="{{ form.email.value|default:'' }}" required placeholder="Enter your email" />
+                                            </span>
+                                            
+                                            <span class="ec-bill-wrap ec-bill-half">
+                                                <label>Phone Number*</label>
+                                                <input type="text" name="phone" value="{{ form.phone.value|default:'' }}" required placeholder="Phone Number" />
+                                            </span>
+                                            
+                                            <span class="ec-bill-wrap ec-bill-full">
+                                                <label>Address*</label>
+                                                <input type="text" name="address" value="{{ form.address.value|default:'' }}" required placeholder="Street Address" />
+                                            </span>
+                                            
+                                            <span class="ec-bill-wrap ec-bill-half">
+                                                <label>District*</label>
+                                                <select name="district" id="district-select" class="form-control" required>
+                                                    <option value="">Select District</option>
+                                                </select>
+                                            </span>
+                                            
+                                            <span class="ec-bill-wrap ec-bill-half">
+                                                <label>Thana / Area </label>
+                                                <select name="thana" id="thana-select" class="form-control" disabled>
+                                                    <option value="">Select Thana</option>
+                                                </select>
+                                            </span>
+                                            
+                                            <!-- Hidden field to store delivery charge -->
+                                            <input type="hidden" name="delivery_charge" id="delivery_charge_input" value="0">
+                                            
+                                            <!-- Delivery charge display -->
+                                            {% comment %} <span class="ec-bill-wrap ec-bill-full">
+                                                <div id="delivery-info" class="delivery-info" style="display: none;">
+                                                    <i class="mdi mdi-truck-delivery"></i> 
+                                                    <span id="delivery-text">Select location to see delivery charge</span>
+                                                </div>
+                                            </span> {% endcomment %}
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <span class="ec-check-order-btn">
+                                <button class="btn btn-primary" type="submit" id="placeOrderBtn">Place Order</button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="ec-checkout-rightside col-lg-4 col-md-12">
+                    <div class="ec-sidebar-wrap">
+                        
+                        <div class="ec-sidebar-block">
+                            <div class="ec-sb-title">
+                                <h3 class="ec-sidebar-title">Order Summary</h3>
+                            </div>
+                            
+                            <div class="ec-sb-block-content">
+                                <div class="ec-checkout-pro">
+                                    
+                                    {% for item in cart_items %}
+                                    <div class="col-sm-12 mb-6">
+                                        <div class="ec-product-inner">
+                                            <div class="ec-pro-image-outer">
+                                                <div class="ec-pro-image">
+                                                    <a href="{% url 'singleproduct' item.product.slug %}" class="image">
+                                                        <img class="main-image" src="{{ item.product.product_image.url }}" alt="{{ item.product.title }}" />
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            <div class="ec-pro-content">
+                                                <h5 class="ec-pro-title"><a href="#">{{ item.product.title }}</a></h5>
+                                                <span class="ec-price">
+                                                    <span class="new-price">৳{{ item.price }} x {{ item.quantity }}</span>
+                                                </span>
+                                                <div class="ec-pro-size">
+                                                    <span class="small">Subtotal: ৳{{ item.subtotal }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                
+                                <div class="ec-checkout-summary">
+                                    <div>
+                                        <span class="text-left">Sub-Total</span>
+                                        <span class="text-right">৳<span id="summary-subtotal">{{ grand_total }}</span></span>
+                                    </div>
+                                    <div>
+                                        <span class="text-left">Delivery Charges</span>
+                                        <span class="text-right">৳<span id="summary-delivery">0.00</span></span>
+                                    </div>
+                                    <div class="ec-checkout-summary-total">
+                                        <span class="text-left">Total Amount</span>
+                                        <span class="text-right">৳<span id="summary-total">{{ grand_total }}</span></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="ec-sidebar-wrap ec-checkout-pay-wrap">
+                            <div class="ec-sidebar-block">
+                                <div class="ec-sb-title">
+                                    <h3 class="ec-sidebar-title">Payment Method</h3>
+                                </div>
+                                <div class="ec-sb-block-content">
+                                    <div class="ec-checkout-pay">
+                                        <div class="ec-pay-desc">Please select the preferred payment method to use on this order.</div>
+                                        <span class="ec-pay-option">
+                                            <span>
+                                                <input type="radio" id="pay1" name="payment_method" value="COD" checked>
+                                                <label for="pay1">Cash On Delivery</label>
+                                            </span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock content %}
+
+{% block core_js %}
+<script src="{% static 'assets/js/main.js' %}"></script>
+<script src="{% static 'assets/js/vendor/index.js' %}"></script>
+<script src="{% static 'assets/js/plugins/jquery.zoom.min.js' %}"></script>
+<script src="{% static 'assets/js/plugins/slick.min.js' %}"></script>
+<script src="{% static 'assets/js/plugins/infiniteslidev2.js' %}"></script>
+<script src="{% static 'assets/js/plugins/jquery.sticky-sidebar.js' %}"></script>
+
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+{% endblock core_js %}
+
+{% block custom_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.body.classList.add('checkout_page');
+        
+        // DHAKA URBAN THANAS - Complete List
+        const DHAKA_THANAS = [
+            "Adabor", "Airport", "Badda", "Banani", "Bangshal", "Bhashantek",
+            "Cantonment", "Chackbazar", "Dakshinkhan", "Darus Salam", "Demra",
+            "Dhamrai", "Dhanmondi", "Dohar", "Gendaria", "Gulshan", "Hazaribagh",
+            "Jatrabari", "Kafrul", "Kalabagan", "Kamrangirchar", "Keraniganj",
+            "Khilgaon", "Khilkhet", "Kotwali", "Lalbagh", "Mirpur", "Mohammadpur",
+            "Motijheel", "Nawabganj", "New Market", "Pallabi", "Paltan", "Ramna",
+            "Rampura", "Sabujbagh", "Savar", "Shah Ali", "Shahbagh", "Shahjahanpur",
+            "Sher-e-Bangla Nagar", "Shyampur", "South Keraniganj", "Sutrapur",
+            "Tejgaon", "Tejgaon Industrial", "Turag", "Uttara", "Uttarkhan", "Vatara"
+        ];
+        
+        const districtSelect = $('#district-select');
+        const thanaSelect = $('#thana-select');
+        const deliveryInfo = $('#delivery-info');
+        const deliveryText = $('#delivery-text');
+        const deliveryChargeInput = $('#delivery_charge_input');
+        const summaryDelivery = $('#summary-delivery');
+        const summaryTotal = $('#summary-total');
+        const subtotal = parseFloat('{{ grand_total|stringformat:"f" }}');
+        
+        // Initialize Select2
+        districtSelect.select2({
+            placeholder: 'Select District',
+            allowClear: true
+        });
+        
+        thanaSelect.select2({
+            placeholder: 'Select Thana ',
+            allowClear: true
+        });
+        
+        // Load Districts from BD API
+        function loadDistricts() {
+            districtSelect.html('<option value="">Loading districts...</option>');
+            
+            fetch('https://bdapis.vercel.app/geo/v2.0/districts')
+                .then(response => response.json())
+                .then(data => {
+                    districtSelect.html('<option value="">Select District</option>');
+                    
+                    const sorted = data.data.sort((a, b) => a.name.localeCompare(b.name));
+                    
+                    sorted.forEach(district => {
+                        const option = new Option(
+                            `${district.name} (${district.bn_name})`,
+                            district.name,
+                            false,
+                            false
+                        );
+                        option.setAttribute('data-id', district.id);
+                        districtSelect.append(option);
+                    });
+                    
+                    districtSelect.trigger('change');
+                })
+                .catch(error => {
+                    console.error("Error loading districts:", error);
+                    districtSelect.html('<option value="">Error loading districts</option>');
+                });
+        }
+        
+        // Load Thanas/Upazilas based on District
+        districtSelect.on('change', function() {
+            const districtName = $(this).val();
+            const districtId = $(this).find('option:selected').data('id');
+            
+            // Reset thana dropdown
+            thanaSelect.html('<option value="">Select Thana</option>');
+            thanaSelect.prop('disabled', true);
+            thanaSelect.trigger('change');
+            
+            // Reset delivery charge
+            resetDeliveryCharge();
+            
+            if (!districtId) return;
+            
+            // SPECIAL CASE: DHAKA
+            if (districtName === 'Dhaka') {
+                thanaSelect.html('<option value="">Select Thana</option>');
+                
+                DHAKA_THANAS.forEach(thana => {
+                    const option = new Option(thana, thana, false, false);
+                    thanaSelect.append(option);
+                });
+                
+                thanaSelect.prop('disabled', false);
+                thanaSelect.trigger('change');
+                
+                // Fetch delivery charge for Dhaka (district-wide)
+                fetchDeliveryCharge(districtName, '');
+                
+            } else {
+                // ALL OTHER DISTRICTS: Use BD API
+                thanaSelect.html('<option value="">Loading upazilas...</option>');
+                
+                fetch(`https://bdapis.vercel.app/geo/v2.0/upazilas/${districtId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        thanaSelect.html('<option value="">Select Thana</option>');
+                        
+                        data.data.forEach(upazila => {
+                            const option = new Option(
+                                `${upazila.name} (${upazila.bn_name})`,
+                                upazila.name,
+                                false,
+                                false
+                            );
+                            thanaSelect.append(option);
+                        });
+                        
+                        thanaSelect.prop('disabled', false);
+                        thanaSelect.trigger('change');
+                        
+                        // Fetch delivery charge for district
+                        fetchDeliveryCharge(districtName, '');
+                    })
+                    .catch(error => {
+                        console.error("Error loading upazilas:", error);
+                        thanaSelect.html('<option value="">Error loading upazilas</option>');
+                    });
+            }
+        });
+        
+        // When Thana changes, fetch specific delivery charge
+        thanaSelect.on('change', function() {
+            const district = districtSelect.val();
+            const thana = $(this).val();
+            
+            if (district) {
+                fetchDeliveryCharge(district, thana);
+            }
+        });
+        
+        // Fetch Delivery Charge from Backend
+        function fetchDeliveryCharge(district, thana) {
+            if (!district) return;
+            
+            // Show loading
+            deliveryInfo.removeClass('success').addClass('loading').show();
+            deliveryText.html('<i class="mdi mdi-loading mdi-spin"></i> Checking delivery charge...');
+            
+            // Get CSRF token
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            fetch('{% url "get_delivery_charge" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({
+                    district: district,
+                    thana: thana || ''
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const charge = parseFloat(data.charge);
+                    updateDeliveryCharge(charge, data.location);
+                } else {
+                    deliveryInfo.hide();
+                    alert(data.error || 'Error fetching delivery charge');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                deliveryInfo.hide();
+            });
+        }
+        
+        // Update Delivery Charge Display and Totals
+        function updateDeliveryCharge(charge, location) {
+            deliveryInfo.removeClass('loading').addClass('success').show();
+            deliveryText.html(`Delivery to <strong>${location}</strong>: <strong>৳${charge.toFixed(2)}</strong>`);
+            
+            // Update hidden input
+            deliveryChargeInput.val(charge);
+            
+            // Update summary
+            summaryDelivery.text(charge.toFixed(2));
+            const finalTotal = subtotal + charge;
+            summaryTotal.text(finalTotal.toFixed(2));
+        }
+        
+        // Reset Delivery Charge
+        function resetDeliveryCharge() {
+            deliveryInfo.hide();
+            deliveryChargeInput.val('0');
+            summaryDelivery.text('0.00');
+            summaryTotal.text(subtotal.toFixed(2));
+        }
+        
+        // Form Validation
+        $('#checkoutForm').on('submit', function(e) {
+            const district = districtSelect.val();
+            
+            if (!district) {
+                e.preventDefault();
+                alert('Please select a district');
+                districtSelect.focus();
+                return false;
+            }
+        });
+        
+        // Initialize
+        loadDistricts();
+    });
+</script>
+{% endblock custom_js %}

@@ -1,0 +1,60 @@
+{% extends "front/base.html" %}
+
+{% load static %}
+
+{% block content %}
+<div class="sticky-header-next-sec ec-breadcrumb section-space-mb">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="row ec_breadcrumb_inner">
+                    <div class="col-md-6 col-sm-12">
+                        <h2 class="ec-breadcrumb-title">{{ about_page.page_title }}</h2>
+                    </div>
+                    <div class="col-md-6 col-sm-12">
+                        <ul class="ec-breadcrumb-list">
+                            <li class="ec-breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                            <li class="ec-breadcrumb-item active">{{ about_page.page_title }}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="ec-page-content section-space-p">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <div class="section-title">
+                    <h2 class="ec-bg-title">{{ about_page.section_title }}</h2>
+                    <h2 class="ec-title">{{ about_page.section_title }}</h2>
+                    {% if about_page.subtitle %}
+                    <p class="sub-title mb-3">{{ about_page.subtitle }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="ec-common-wrapper">
+                <div class="row">
+                    <div class="col-md-6 ec-cms-block ec-abcms-block text-center">
+                        <div class="ec-cms-block-inner">
+                            {% if about_page.image %}
+                            <img class="a-img" src="{{ about_page.image.url }}" alt="{{ about_page.heading }}">
+                            {% else %}
+                            <img class="a-img" src="{% static 'assets/images/offer-image/1.jpg' %}" alt="{{ about_page.heading }}">
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6 ec-cms-block ec-abcms-block text-center">
+                        <div class="ec-cms-block-inner">
+                            <h3 class="ec-cms-block-title">{{ about_page.heading }}</h3>
+                            {{ about_page.description|safe }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}

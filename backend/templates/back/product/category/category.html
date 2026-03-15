@@ -1,0 +1,285 @@
+{% extends "back/base.html" %}
+{% load static %}
+
+{% block custom_css %}
+<style>
+    .cat-thumb {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: 4px;
+        border: 1px solid #dee2e6;
+    }
+    .ec-sub-cat-tag {
+        display: inline-block;
+        background: #e9ecef;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        margin: 2px;
+    }
+    .ec-sub-cat-list {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    .ec-sub-cat-count {
+        background: #0d6efd;
+        color: white;
+        padding: 2px 6px;
+        border-radius: 10px;
+        font-size: 11px;
+        margin-right: 5px;
+    }
+</style>
+{% endblock custom_css %}
+
+{% block content %}
+<div class="ec-content-wrapper">
+    <div class="content">
+        <div class="breadcrumb-wrapper breadcrumb-wrapper-2 breadcrumb-contacts">
+            <h1>Main Category</h1>
+            <p class="breadcrumbs">
+                <span><a href="index.html">Home</a></span>
+                <span><i class="mdi mdi-chevron-right"></i></span>Main Category
+            </p>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+        <div class="row mb-4">
+            <div class="col-12">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="row">
+            <!-- Add Category Form -->
+            <div class="col-xl-4 col-lg-12">
+                <div class="ec-cat-list card card-default mb-24px">
+                    <div class="card-body">
+                        <div class="ec-cat-form">
+                            <h4>
+                                {% if edit_category %} 
+                                Edit Category: {{ edit_category.name }}
+                                {% else %}
+                                Add New Category
+                                {% endif %}
+                            </h4>
+
+                            <form method="POST" enctype="multipart/form-data" id="categoryForm">
+                                {% csrf_token %}
+                                
+                                {% if edit_category %}
+                                <input type="hidden" name="category_id" value="{{ edit_category.id }}">
+                                {% endif %}
+
+                                <div class="form-group row mb-3">
+                                    <label class="col-12 col-form-label">Name</label> 
+                                    <div class="col-12">
+                                        {% if edit_category %}
+                                        {{ edit_form.name }}
+                                        {% else %}
+                                        {{ form.name }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="form-group row mb-3">
+                                    <label class="col-12 col-form-label">Sort Description</label> 
+                                    <div class="col-12">
+                                        {% if edit_category %}
+                                        {{ edit_form.short_description }}
+                                        {% else %}
+                                        {{ form.short_description }}
+                                        {% endif %}
+                                    </div>
+                                </div> 
+
+                                <div class="form-group row mb-3">
+                                    <label class="col-12 col-form-label">Category Image</label> 
+                                    <div class="col-12">
+                                        {% if edit_category %}
+                                        {{ edit_form.image }}
+                                        <small>{{ edit_form.image.help_text }}</small>
+                                        {% else %}
+                                        {{ form.image }}
+                                        <small>{{ form.image.help_text }}</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="form-group row mb-3">
+                                    <label class="col-12 col-form-label">Status</label> 
+                                    <div class="col-12">
+                                        {% if edit_category %}
+                                        {{ edit_form.status }}
+                                        {% else %}
+                                        {{ form.status }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-12">
+                                        {% if edit_category %}
+                                        <a href="{% url 'category' %}" class="btn btn-secondary">Cancel Edit</a>
+                                        <button type="submit" class="btn btn-primary">Update Category</button>
+                                        {% else %}
+                                        <button type="submit" class="btn btn-primary">Submit</button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categories List -->
+            <div class="col-xl-8 col-lg-12">
+                <div class="ec-cat-list card card-default">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table id="responsive-data-table" class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Thumb</th>
+                                        <th>Name</th>
+                                        <th>Description</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for category in categories %}
+                                    <tr id="category-{{ category.id }}">
+                                        <td>
+                                            {% if category.image %}
+                                            <img src="{{ category.image.url }}" alt="{{ category.name }}" class="cat-thumb">
+                                            {% else %}
+                                            <div class="cat-thumb bg-light d-flex align-items-center justify-content-center">
+                                                <i class="mdi mdi-folder-outline text-muted"></i>
+                                            </div>
+                                            {% endif %}
+                                        </td>
+                                        <td><strong>{{ category.name }}</strong></td>
+                                        <td>{{ category.short_description|truncatechars:50|default:"-" }}</td>
+                                        <td>
+                                            {% if category.status == 'active' %}
+                                            <span class="badge badge-success">ACTIVE</span>
+                                            {% else %}
+                                            <span class="inactive">INACTIVE</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-outline-success">Info</button>
+                                                <button type="button"
+                                                    class="btn btn-outline-success dropdown-toggle dropdown-toggle-split"
+                                                    data-bs-toggle="dropdown" aria-haspopup="true"
+                                                    aria-expanded="false" data-display="static">
+                                                    <span class="sr-only">Info</span>
+                                                </button>
+                                                <div class="dropdown-menu">
+                                                    <a class="dropdown-item" href="?edit={{ category.id }}">Edit</a>
+                                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" 
+                                                       data-bs-target="#deleteModal{{ category.id }}">Delete</a>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Delete Modal -->
+                                    <div class="modal fade" id="deleteModal{{ category.id }}" tabindex="-1">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Confirm Delete</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>Are you sure you want to delete <strong>"{{ category.name }}"</strong>?</p>
+                                                    <p class="text-danger">This action cannot be undone.</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <form method="POST" action="{% url 'delete_category' category.id %}" style="display: inline;">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-danger">Delete</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4">
+                                            <i class="mdi mdi-folder-outline mdi-48px text-muted"></i>
+                                            <h5 class="mt-2">No categories found</h5>
+                                            <p class="text-muted">Add your first category to get started</p>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block custom_js %}
+<script>
+// Auto-scroll to form when editing
+{% if edit_category %}
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelector('.ec-cat-form').scrollIntoView({ behavior: 'smooth' });
+});
+{% endif %}
+
+// Preview image before upload
+document.addEventListener('DOMContentLoaded', function() {
+    const imageInput = document.querySelector('input[type="file"]');
+    if (imageInput) {
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Create preview if not exists
+                    let preview = imageInput.parentNode.querySelector('.image-preview');
+                    if (!preview) {
+                        preview = document.createElement('img');
+                        preview.className = 'image-preview mt-2';
+                        preview.style.maxWidth = '100px';
+                        preview.style.maxHeight = '100px';
+                        imageInput.parentNode.appendChild(preview);
+                    }
+                    preview.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+});
+
+// Reset form after successful submission (only for add mode)
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('categoryForm');
+    if (form && !{% if edit_category %}true{% else %}false{% endif %}) {
+        // Clear form on page load if not editing
+        form.reset();
+    }
+});
+</script>
+{% endblock custom_js %}

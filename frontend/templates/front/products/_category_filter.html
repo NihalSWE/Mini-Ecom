@@ -1,0 +1,26 @@
+<div class="ec-sb-block-content ec-sidebar-dropdown" id="categoryFilterBlock">
+    <ul>
+        <li>
+            <div class="ec-sidebar-block-item ec-category-option">
+                <input type="checkbox" {% if not selected_category %}checked{% endif %} data-url="{% url 'allProducts' %}{% if all_products_query %}?{{ all_products_query }}{% endif %}" class="js-category-filter-toggle">
+                <a href="{% url 'allProducts' %}{% if all_products_query %}?{{ all_products_query }}{% endif %}" class="js-category-filter-link">
+                    <span>All Categories</span>
+                    <span>({{ all_products_count }})</span>
+                </a>
+                <span class="checked"></span>
+            </div>
+        </li>
+        {% for item in category_links %}
+        <li>
+            <div class="ec-sidebar-block-item ec-category-option">
+                <input type="checkbox" {% if item.is_active %}checked{% endif %} data-url="{% url 'allProducts' %}?{{ item.url }}" class="js-category-filter-toggle">
+                <a href="{% url 'allProducts' %}?{{ item.url }}" class="js-category-filter-link">
+                    <span>{{ item.category.name }}</span>
+                    <span>({{ item.category.product_count }})</span>
+                </a>
+                <span class="checked"></span>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
